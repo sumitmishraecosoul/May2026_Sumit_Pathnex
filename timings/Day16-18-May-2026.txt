@@ -1,13 +1,13 @@
 ----------------------------------------
 ----------------------------------------
 # What I did today
-# 2.5 hours - K8s Class 5 (probes, affinity, taints, Jobs, StatefulSet, DaemonSet)
-# 1 hour - added liveness/readiness to deployment, tested taint on node
+# 2 hours - K8s Class 5 (probes, affinity, taints, drain/cordon)
+# 1.5 hours - Helm part 1: install helm, repo add, helm install, list, search, show
 # 30 mins - Day16 files + push from EC2
 
 ## Tomorrow's Task
-# K8s Class 6 - Helm install, upgrade, rollback, multi-env values
-# Deploy sample chart dev vs prod values file
+# Helm part 2 - upgrade, rollback, values.yaml, pathnex-chart, dev/staging/prod
+# helm create, lint, package, helm template --dry-run
 
 ----------------------------------------
 ----------------------------------------

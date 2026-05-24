@@ -1,85 +1,96 @@
 Kubernetes — Day 16 (18 May 2026)
-PathNex K8s Class 5 — production building blocks
-=================================================
+PathNex K8s Class 5 — production K8s + Helm (part 1)
+===================================================
 
 
-Probes (health checks on EKS/production)
-----------------------------------------
+Probes (still needed with Helm deployments)
+-------------------------------------------
   liveness   — fail → restart container
   readiness  — fail → remove from Service endpoints
-  startup    — slow apps; blocks other probes until success
-
-Example in deployment yaml:
-  livenessProbe:
-    httpGet:
-      path: /health
-      port: 8080
-    initialDelaySeconds: 10
-    periodSeconds: 5
-  readinessProbe:
-    httpGet:
-      path: /ready
-      port: 8080
+  startup    — slow apps; wait before other probes fire
 
   kubectl describe pod <name> | grep -A10 Liveness
   kubectl get events
 
 
-Affinity (where pods run)
--------------------------
-  nodeAffinity     — pick nodes (SSD, GPU, zone)
-  podAffinity      — run near other pods
-  podAntiAffinity  — spread replicas across nodes (HA)
-
-  kubectl get nodes --show-labels
-  kubectl describe pod <name> | grep -A20 Affinity
-
-
-Taints & tolerations
---------------------
-Node taint keeps pods off unless tolerated.
-
+Affinity & taints (scheduling — class recap)
+--------------------------------------------
+  nodeAffinity / podAntiAffinity — spread replicas for HA
   kubectl taint nodes node1 key=gpu:NoSchedule
-  kubectl taint nodes node1 key=gpu:NoSchedule-   # remove
+  kubectl taint nodes node1 key=gpu:NoSchedule-
 
-Pod needs tolerations matching taint in yaml.
-
-
-Other controllers (class overview + commands)
----------------------------------------------
-DaemonSet — one pod per node (logging agents):
-  kubectl get daemonset -n kube-system
-
-StatefulSet — stable names + storage (DBs):
-  kubectl get statefulset
-
-Job / CronJob — batch / scheduled:
-  kubectl create job pi --image=perl -- perl -Mbignum=bpi -wle 'print bpi(20)'
-  kubectl get jobs
-  kubectl create cronjob hello --image=busybox --schedule="*/5 * * * *" -- echo hi
-  kubectl get cronjob
-
-
-Network policy (security between pods)
---------------------------------------
-  kubectl get networkpolicy
-  kubectl describe networkpolicy <name>
-
-
-Useful production kubectl
--------------------------
   kubectl top nodes
   kubectl top pods
-  kubectl cordon <node>
-  kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
+  kubectl drain <node> --ignore-daemonsets
   kubectl uncordon <node>
-  kubectl api-resources
-  kubectl explain pod.spec.containers
 
 
-EKS note from class
--------------------
-Control plane cost + worker nodes; check aws.amazon.com/eks/pricing/
+Helm — what it is (Class 5 start)
+---------------------------------
+Helm = **package manager for Kubernetes** (like apt for Ubuntu).
+
+Instead of applying 10 separate yaml files by hand, one **chart** installs
+Deployment + Service + Ingress + ConfigMap together.
+
+Key pieces:
+  **Helm client**     — helm CLI on my laptop/EC2
+  **Chart**           — folder: Chart.yaml + values.yaml + templates/
+  **Repository**      — where charts are stored (Helm Hub / bitnami)
+  **Release**         — one installed chart instance in the cluster
+
+Helm v3 — **no Tiller** (old v2 server is gone). Only need kubectl + helm CLI.
+
+
+Why companies use Helm
+----------------------
+  - faster repeatable deploys
+  - versioned upgrades and rollbacks
+  - values.yaml per environment (dev / staging / prod)
+  - share charts across teams
+
+
+How Helm works (class diagram in notes)
+---------------------------------------
+  1. Chart has templates + default values
+  2. helm install renders templates → Kubernetes yaml → applies to cluster
+  3. helm upgrade changes release; helm rollback if broken
+
+
+Install Helm (EC2 / Linux)
+--------------------------
+  curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  helm version
+  # macOS class note: brew install helm
+  # Helm v3: just verify kubectl context is correct
+
+
+Repo + first install (class examples)
+-------------------------------------
+  helm repo add stable https://charts.helm.sh/stable
+  helm repo add bitnami https://charts.bitnami.com/bitnami
+  helm repo update
+  helm search repo nginx
+
+  # class example (stable repo — lab also used bitnami):
+  helm install my-nginx-ingress stable/nginx-ingress
+
+  # what I ran on lab (bitnami):
+  helm install my-nginx bitnami/nginx --namespace pathnex --create-namespace
+
+  kubectl get pods -n pathnex
+  helm list -n pathnex
+  helm status my-nginx -n pathnex
+
+
+Helm commands practiced today (part 1)
+--------------------------------------
+  helm install <release> <chart>
+  helm list
+  helm list -A
+  helm search repo <keyword>
+  helm show chart bitnami/nginx
+  helm show values bitnami/nginx
+  helm get all my-nginx -n pathnex
 
 
 Push from EC2 — branch Day16-18-May-2026
@@ -87,7 +98,8 @@ Push from EC2 — branch Day16-18-May-2026
 
 What I did on my own
 --------------------
-- Broke liveness path on purpose, watched restart count increment
+- Compared helm show values output with what appeared in kubectl get deploy -o yaml
+- Added liveness probe in raw deployment before moving same app to Helm chart tomorrow
 
 
 Notes from class

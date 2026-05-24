@@ -1,91 +1,152 @@
 Kubernetes — Day 17 (19 May 2026)
-PathNex K8s Class 6 — Helm + job-ready workflow
-===============================================
+PathNex K8s Class 6 — Helm (part 2) + Pathnex chart
+==================================================
 
 
-Why Helm in real companies
---------------------------
-Raw yaml folders get messy. **Helm chart** = templated package (Deployment, Service,
-Ingress, HPA in one bundle). **values.yaml** changes per environment (dev/uat/prod).
-
-
-Helm concepts
--------------
-  Chart    — package (templates + values)
-  Release  — installed instance of a chart
-  Repo     — chart repository (like helm repo add bitnami)
-
-
-Install Helm CLI (on EC2 / laptop)
-----------------------------------
-  curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-  helm version
-
-
-Commands I practiced today
---------------------------
-  helm repo add bitnami https://charts.bitnami.com/bitnami
-  helm repo update
-  helm search repo nginx
-
-  helm install my-nginx bitnami/nginx --namespace dev --create-namespace
-  helm list -A
-  helm status my-nginx -n dev
-  kubectl get pods -n dev
-
-Upgrade (new config / image):
-  helm upgrade my-nginx bitnami/nginx -n dev --set service.type=NodePort
-  helm history my-nginx -n dev
+Helm lifecycle commands (class + lab)
+-------------------------------------
+Upgrade:
+  helm upgrade my-nginx-ingress stable/nginx-ingress
+  helm upgrade my-nginx bitnami/nginx -n pathnex --set replicaCount=2
 
 Rollback:
-  helm rollback my-nginx 1 -n dev
+  helm history my-nginx -n pathnex
+  helm rollback my-nginx-ingress 2
+  helm rollback my-nginx 1 -n pathnex
 
 Uninstall:
-  helm uninstall my-nginx -n dev
+  helm uninstall my-nginx-ingress
+  helm uninstall my-nginx -n pathnex
+  helm uninstall my-nginx -n pathnex --keep-history
 
-Dry-run (before prod):
-  helm install my-nginx bitnami/nginx -n dev --dry-run --debug
-
-
-Multi-environment pattern (class)
----------------------------------
-  values-dev.yaml    — 1 replica, small resources
-  values-prod.yaml   — 3 replicas, probes on, ingress enabled
-
-  helm upgrade --install app ./my-chart -f values-dev.yaml -n dev
-  helm upgrade --install app ./my-chart -f values-prod.yaml -n prod
+Dry-run / render without apply:
+  helm install my-nginx bitnami/nginx --dry-run --debug
+  helm upgrade my-nginx bitnami/nginx -n pathnex --dry-run
+  helm template my-nginx bitnami/nginx -f values.yaml
 
 
-Custom chart (mini project)
----------------------------
-  helm create pathnex-app
-  # edit templates/deployment.yaml, values.yaml
-  helm lint pathnex-app
-  helm install pathnex pathnex-app -f values-dev.yaml
-  helm upgrade pathnex pathnex-app -f values-prod.yaml
+Full command cheat sheet (practiced)
+------------------------------------
+  helm repo add <name> <url>
+  helm repo update
+  helm search repo <chart>
+  helm show chart|values|readme|all <chart>
+  helm install <release> <chart> [-f values.yaml] [-n ns]
+  helm upgrade <release> <chart> [-f values.yaml]
+  helm list [-A]
+  helm history <release>
+  helm rollback <release> <revision>
+  helm uninstall <release>
+  helm get values <release> [--all]
+  helm get all <release>
+  helm pull <chart> [--untar]
+  helm create <chart-name>
+  helm lint <chart-dir>
+  helm package <chart-dir>
 
 
-Cluster upgrade (Class 5 topic — high level)
+Custom values file (class nginx-ingress example)
+------------------------------------------------
+Created values.yaml:
+  controller:
+    replicaCount: 2
+    ingressClass: nginx
+  service:
+    externalTrafficPolicy: Local
+
+Install with override:
+  helm install my-nginx-ingress stable/nginx-ingress -f values.yaml
+
+
+Multi-environment (Pathnex pattern)
+-----------------------------------
+  helm upgrade --install pathnex-app ./pathnex-chart -f values-dev.yaml -n dev
+  helm upgrade --install pathnex-app ./pathnex-chart -f values-staging.yaml -n staging
+  helm upgrade --install pathnex-app ./pathnex-chart -f values-production.yaml -n prod
+
+values-dev.yaml (snippet from class):
+  replicaCount: 2
+  image:
+    tag: dev-latest
+  service:
+    type: ClusterIP
+    port: 8080
+
+values-production.yaml (snippet):
+  replicaCount: 5
+  image:
+    tag: prod-latest
+  service:
+    type: LoadBalancer
+    port: 80
+
+
+Pathnex chart directory (we scaffolded in lab)
 --------------------------------------------
-  - Control plane version upgraded in cloud (EKS console / eksctl)
-  - Node groups drained and cycled to new kubelet version
-  - Check API deprecation warnings before jump versions
-  (We did not run production upgrade in lab — theory + AWS docs only.)
+pathnex-chart/
+  Chart.yaml              # name, version, dependencies (redis, mysql…)
+  values.yaml             # defaults
+  values-dev.yaml
+  values-staging.yaml
+  values-production.yaml
+  charts/                 # packaged dependency .tgz
+  templates/
+    deployment.yaml
+    service.yaml
+    ingress.yaml
+    configmap.yaml
+    secret.yaml
+    _helpers.tpl
+  README.md
+  NOTES.txt
+
+Chart.yaml example from notes:
+  apiVersion: v2
+  name: pathnex-chart
+  version: 1.0.0
+  appVersion: 1.0.0
+
+Template idea (deployment uses values):
+  replicas: {{ .Values.replicaCount }}
+  image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
 
-Interview mistakes to avoid (Helm + K8s)
-----------------------------------------
-  - Editing live resources but not chart → next helm upgrade overwrites
-  - Secrets in values.yaml committed to Git
-  - No resource limits → noisy neighbor on node
-  - Using latest tag instead of pinned image digest in prod
+Commands to build our own chart
+-------------------------------
+  helm create pathnex-chart
+  helm lint pathnex-chart
+  helm package pathnex-chart
+  helm install pathnex-rel ./pathnex-chart -f values-dev.yaml -n dev
+  helm upgrade pathnex-rel ./pathnex-chart -f values-production.yaml -n prod
 
 
-Quick kubectl still used with Helm
-----------------------------------
+kubectl after Helm (verify release)
+---------------------------------
   kubectl get all -n dev
-  kubectl logs -l app.kubernetes.io/instance=my-nginx -n dev
-  helm get values my-nginx -n dev
+  kubectl describe deploy -n dev
+  kubectl logs -l app.kubernetes.io/instance=my-nginx -n pathnex
+  helm get values my-nginx -n pathnex
+
+
+Interview / mistakes (class)
+----------------------------
+Q: Helm vs raw kubectl apply?
+A: Helm templates + tracks release history + easy rollback.
+
+Q: What is a release?
+A: Named instance of a chart running in the cluster.
+
+Mistakes:
+  - kubectl edit deployment but Helm owns it → next upgrade reverts
+  - secrets in values.yaml committed to Git
+  - using :latest tag in production
+
+
+EKS cluster upgrade (theory only in class)
+------------------------------------------
+  - Upgrade control plane version in EKS console / eksctl
+  - Drain nodes, roll node group to new AMI/kubelet
+  - Check deprecated APIs before version jump
 
 
 Push from EC2 — branch Day17-19-May-2026
@@ -93,8 +154,8 @@ Push from EC2 — branch Day17-19-May-2026
 
 What I did on my own
 --------------------
-- Compared helm upgrade --dry-run output for dev vs prod values
-- Wrote 5 interview answers in notebook (pod, deployment, service, ingress, helm)
+- helm upgrade with --dry-run compared dev vs prod replica counts
+- Wrote NOTES.txt for our chart with port-forward instructions
 
 
 Notes from class
