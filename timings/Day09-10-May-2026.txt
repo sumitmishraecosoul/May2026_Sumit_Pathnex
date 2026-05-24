@@ -3,7 +3,7 @@
 # What I did today
 # 2.5 hours - PathNex AWS Day 9 (Batch, Glue, EFS, Beanstalk, CloudFront, CI/CD, X-Ray)
 # 40 mins - drew a simple pipeline: CodeCommit → CodeBuild → CodeDeploy on EC2
-# 30 mins - Day09 timings + coding practice, finished AWS 3-day block
+# 30 mins - Day09 files + push from EC2, finished AWS 3-day block
 
 ## Tomorrow's Task
 # Revision - one service each from Day 7, 8, 9 (write one-line purpose from memory)
