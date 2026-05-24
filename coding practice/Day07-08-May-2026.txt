@@ -81,11 +81,28 @@ AWS CLI / console practice from today
   aws cloudtrail describe-trails
 
 
+Push notes to GitHub from EC2 (started Day 7 — repeat every day)
+----------------------------------------------------------------
+First time on lab EC2 I did one-time setup (git install, config, SSH key, clone).
+Full steps I follow daily are in:
+  coding practice/Git-Push-from-EC2-Daily-Workflow.txt
+
+Today's push from EC2:
+  cd ~/May2026_Sumit_Pathnex
+  git checkout main && git pull origin main
+  git checkout -b Day07-08-May-2026
+  git add timings/Day07-08-May-2026.txt "coding practice/Day07-08-May-2026.txt"
+  git add "coding practice/Git-Push-from-EC2-Daily-Workflow.txt"
+  git commit -m "Added Day07 AWS notes (08 May 2026)"
+  git push -u origin Day07-08-May-2026
+
+
 What I did on my own after class
 --------------------------------
 - Created IAM user with console access (no admin on personal lab)
 - Launched one EC2 in default VPC, checked public IP, stopped instance to save cost
 - Uploaded a text file to S3 and enabled block public access on bucket
+- Installed git on EC2, added SSH key to GitHub, cloned repo
 
 
 Notes from class
