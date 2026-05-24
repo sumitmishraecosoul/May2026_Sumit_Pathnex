@@ -6,7 +6,7 @@ My daily practice log for the May 2026 PathNex batch.
 
 - `timings/` — what I studied each day + tomorrow's plan  
 - `coding practice/` — notes and commands for that day only  
-- From **Day 07** onward: push daily from EC2 → `coding practice/Git-Push-from-EC2-Daily-Workflow.txt`  
+- From **Day 07** onward: EC2 → GitHub push steps are in Day 07 coding practice  
 
 ## Schedule
 

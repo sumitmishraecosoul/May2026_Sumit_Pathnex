@@ -81,20 +81,28 @@ AWS CLI / console practice from today
   aws cloudtrail describe-trails
 
 
-Push notes to GitHub from EC2 (started Day 7 — repeat every day)
-----------------------------------------------------------------
-First time on lab EC2 I did one-time setup (git install, config, SSH key, clone).
-Full steps I follow daily are in:
-  coding practice/Git-Push-from-EC2-Daily-Workflow.txt
+Push notes to GitHub from EC2 (Day 7 onward — repeat every day)
+--------------------------------------------------------------
 
-Today's push from EC2:
+One-time setup on EC2:
+  sudo yum install git -y                    # Amazon Linux
+  # sudo apt update && sudo apt install git -y   # Ubuntu
+  git config --global user.name "Sumit Mishra"
+  git config --global user.email "your@email.com"
+  ssh-keygen -t ed25519 -C "your@email.com"
+  cat ~/.ssh/id_ed25519.pub                  # add to GitHub → SSH keys
+  ssh -T git@github.com
+  git clone git@github.com:sumitmishraecosoul/May2026_Sumit_Pathnex.git
+  cd May2026_Sumit_Pathnex
+
+Daily push (same steps Day 7, 8, 9, …):
   cd ~/May2026_Sumit_Pathnex
   git checkout main && git pull origin main
   git checkout -b Day07-08-May-2026
   git add timings/Day07-08-May-2026.txt "coding practice/Day07-08-May-2026.txt"
-  git add "coding practice/Git-Push-from-EC2-Daily-Workflow.txt"
   git commit -m "Added Day07 AWS notes (08 May 2026)"
   git push -u origin Day07-08-May-2026
+  # GitHub → Pull request → main → merge
 
 
 What I did on my own after class

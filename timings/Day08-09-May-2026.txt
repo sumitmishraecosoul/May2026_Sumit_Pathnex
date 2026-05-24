@@ -3,7 +3,7 @@
 # What I did today
 # 2.5 hours - PathNex AWS Day 8 (security services + RDS, Aurora, DynamoDB, Redshift, DMS)
 # 40 mins - read GuardDuty sample finding, compared RDS vs DynamoDB use cases
-# 30 mins - Day08 files + push from EC2 (Git-Push-from-EC2-Daily-Workflow.txt)
+# 30 mins - Day08 files + push from EC2 (repeat Day 7 git steps)
 
 ## Tomorrow's Task
 # AWS Day 9 - analytics, Beanstalk, CloudFront, Snowball, CodePipeline/CodeBuild/CodeDeploy, X-Ray

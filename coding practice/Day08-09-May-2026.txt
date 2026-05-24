@@ -75,7 +75,7 @@ Daily push from EC2 (same as Day 7)
   git add timings/Day08-09-May-2026.txt "coding practice/Day08-09-May-2026.txt"
   git commit -m "Added Day08 AWS notes (09 May 2026)"
   git push -u origin Day08-09-May-2026
-  # see Git-Push-from-EC2-Daily-Workflow.txt for full one-time setup
+  # one-time EC2 git setup — same as Day 7 notes
 
 
 What I did on my own after class
