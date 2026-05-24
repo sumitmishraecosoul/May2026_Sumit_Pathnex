@@ -1,0 +1,84 @@
+Linux — Day 04 (04 May 2026)
+PathNex class notes + what I practiced today
+========================================
+
+Fourth Linux session — networking from the server side. How we check if a
+port is open, hit an HTTP endpoint, copy files, log into another machine, and
+look up DNS. This is daily work when a service is "up" but users still cannot
+reach it.
+
+
+What I understood today
+-------------------------
+Networking troubleshooting usually goes in layers:
+  1. Can I resolve the name? (DNS — dig)
+  2. Is something listening on the port? (ss)
+  3. Can I reach the service? (curl / wget)
+  4. Do I need shell access on the box? (ssh)
+
+Old `netstat` still appears in older docs; on our VMs we use **ss** (faster,
+same idea). Class said prefer ss unless a runbook explicitly says netstat.
+
+
+Commands I used / practiced today
+-----------------------------------
+
+HTTP checks — curl (most used in DevOps):
+  curl https://example.com
+  curl -I https://example.com          # headers only
+  curl -v https://example.com          # verbose (see TLS, redirects)
+  curl -o out.html https://example.com # save body to file
+  curl -X POST -H "Content-Type: application/json" -d '{"ok":true}' http://localhost:8080/health
+  curl -w "%{http_code}\n" -o /dev/null -s https://example.com   # print status code only
+
+Download files — wget:
+  wget https://example.com/file.tar.gz
+  wget -O myname.tar.gz https://example.com/file.tar.gz
+  wget -q https://example.com/robots.txt    # quiet
+
+Remote login / copy — ssh:
+  ssh user@hostname
+  ssh -i ~/.ssh/mykey.pem user@10.0.1.5
+  ssh -p 2222 user@host                    # non-default port
+  scp file.txt user@host:/tmp/
+  scp -r ./folder user@host:/home/user/
+
+What is listening / active connections — ss:
+  ss -tuln                  # TCP/UDP listening ports (numbers, no resolve)
+  ss -tulpn                 # include process name (needs root for all PIDs)
+  ss -tan | head            # all TCP connections
+  ss -tuln | grep 443       # is anything on 443?
+
+Legacy (mentioned in class, same checks):
+  netstat -tuln
+  netstat -tulpn
+
+DNS lookup — dig:
+  dig example.com
+  dig example.com +short
+  dig @8.8.8.8 example.com
+  dig MX example.com
+  dig -x 8.8.8.8            # reverse lookup
+
+
+Small workflow from class (service not reachable)
+-------------------------------------------------
+  dig myservice.company.com          # does DNS answer?
+  ss -tuln | grep 8080               # is app listening on 8080?
+  curl -v http://localhost:8080/     # from same host — app OK locally?
+  curl -v http://myservice:8080/     # from jump box — network path OK?
+  ssh user@app-server              # get on box if needed
+
+
+What I did on my own after class
+--------------------------------
+- curl -I on a public site and on localhost nginx/apache in lab
+- ssh into practice VM with my key, then scp a small text file out
+- ss -tulpn and matched nginx listening on 80
+- dig +short on a domain we use in class examples
+
+
+Notes I wrote during class
+----------------------------
+
+

@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2 hours - PathNex Linux Day 5 (tail, journalctl, /var/log, systemctl, apt)
+# 50 mins - traced a failed nginx start using journalctl + error.log
+# 30 mins - Day05 timings + coding practice, commit on Day05 branch
+
+## Tomorrow's Task
+# PathNex Day 6 - Git class (branch, commit, PR, merge, rebase, conflicts)
+# 30 mins - quick Linux revision: systemctl status + tail -f one log file
+# Set up git config if not done: user.name and user.email
+
+----------------------------------------
+----------------------------------------

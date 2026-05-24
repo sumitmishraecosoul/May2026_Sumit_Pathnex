@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2 hours - PathNex Day 6 (Git: team workflow, branches, PR, merge vs rebase, conflicts)
+# 1 hour - practiced on May2026_Sumit_Pathnex repo (day branches, add, commit, push)
+# 30 mins - Day06 timings + coding practice files
+
+## Tomorrow's Task
+# AWS Day 7 class (08 May — skip Sunday 07 May): EC2, IAM, VPC, S3, CloudWatch, Lambda
+# 30 mins - git pull main before creating Day07 branch
+# 45 mins - AWS free tier: IAM user + one EC2 or S3 bucket
+
+----------------------------------------
+----------------------------------------

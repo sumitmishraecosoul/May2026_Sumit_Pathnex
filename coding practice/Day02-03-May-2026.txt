@@ -1,0 +1,68 @@
+Linux — Day 02 (03 May 2026)
+PathNex class notes + what I practiced today
+========================================
+
+Second Linux session — permissions and ownership. Before today I could list
+files; now I can read the permission string, fix access when deploy scripts
+fail with "Permission denied", and set umask so new files are not too open.
+
+
+What I understood today
+-------------------------
+Every file has:
+  - owner user + owner group
+  - permission bits for user / group / others (read, write, execute)
+
+The long listing from Day 1 (`ls -l`) finally made sense — first column is
+mode (e.g. -rw-r--r--), then owner, group, size, name.
+
+Directories need **execute** on the directory to enter it (`cd`), not just read.
+
+umask subtracts from the default when new files/folders are created — important
+so we do not accidentally create world-writable files in /tmp or app dirs.
+
+
+Commands I used / practiced today
+-----------------------------------
+
+Read permissions:
+  ls -l file.txt
+  ls -ld /var/www/html          # directory itself, not contents
+  stat file.txt                 # detailed inode + access info
+
+Change mode — chmod:
+  chmod 644 file.txt              # rw-r--r--
+  chmod 755 script.sh             # rwxr-xr-x (script must be executable)
+  chmod u+x deploy.sh             # add execute for owner
+  chmod g-w shared.conf           # remove group write
+  chmod -R 750 /opt/myapp         # recursive on app tree (used carefully in lab)
+
+Change owner / group — chown, chgrp:
+  sudo chown sumit file.txt
+  sudo chown sumit:devteam app.log
+  sudo chown -R nginx:nginx /var/www/html
+  sudo chgrp docker deploy.sh
+
+Default mask for new files:
+  umask                           # show current (e.g. 0022)
+  umask 022                       # typical: files 644, dirs 755
+  umask 077                       # stricter: only owner
+
+Quick checks we did in class:
+  ls -l /etc/shadow               # why normal user cannot read
+  ls -ld /tmp
+  touch testfile && ls -l testfile   # see mode after create with current umask
+
+
+What I did on my own after class
+--------------------------------
+- Created script.sh, chmod +x, ran ./script.sh
+- Fixed a lab folder where nginx could not read static files (chown to nginx user)
+- Compared ls -l before and after chmod 640 on a config file
+- Noted my umask on WSL with umask command
+
+
+Notes I wrote during class
+----------------------------
+
+
