@@ -16,3 +16,4 @@ My daily practice log for the May 2026 PathNex batch — timings, class notes, a
 | 03 | 03-May | Processes: ps, top, htop, kill, nice | Day03-03-May-2026 |
 | 04 | 04-May | Networking: curl, wget, ssh, ss, dig | Day04-04-May-2026 |
 | 05 | 05-May | Logs, journalctl, systemctl, apt | Day05-05-May-2026 |
+| 06 | 06-May | Git: branch, commit, PR, merge, rebase, conflicts | Day06-06-May-2026 |

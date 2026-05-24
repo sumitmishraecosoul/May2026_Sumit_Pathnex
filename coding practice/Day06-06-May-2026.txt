@@ -1,0 +1,135 @@
+Git — Day 06 (06 May 2026)
+PathNex class notes + what I practiced today
+========================================
+
+Day 6 moved from Linux commands to **Git** — how we actually work in a team:
+branch → commit → push → pull request → review → merge. I used my PathNex repo
+(May2026_Sumit_Pathnex) for hands-on practice.
+
+
+What I understood today
+-------------------------
+Git is **distributed** — everyone has full history locally, not only on the server.
+
+Words we used in class:
+  **repo**     — project folder tracked by git
+  **commit**   — saved snapshot with message + unique ID
+  **branch**   — separate line of work (we use main + day/feature branches)
+  **merge**    — bring another branch into current branch
+  **rebase**   — replay my commits on top of updated main (linear history)
+  **clone**    — copy remote repo to laptop
+  **push**     — send local commits to GitHub/GitLab
+  **pull**     — download + merge remote changes into local branch
+
+Real team flow from class:
+  1. Pull latest main
+  2. Create branch for my work
+  3. Small commits with clear messages
+  4. Push branch and open **PR** (Pull Request)
+  5. Teammate reviews → comments → I fix → merge
+  6. Delete branch after merge (optional cleanup)
+
+**Merge vs rebase (when to use what):**
+  - **merge** — safe default on shared branches; keeps full history; creates merge commit
+  - **rebase** — use on *my* feature branch before PR to clean up commits; never rebase
+    a branch others are already using without team agreement
+
+**Merge conflict** — same lines changed in two branches; Git stops and asks me to
+pick the correct content, then continue merge/rebase.
+
+
+First-time setup (I did this once on my laptop)
+------------------------------------------------
+  git --version
+  git config --global user.name "Sumit Mishra"
+  git config --global user.email "my-email@example.com"
+  git config --list
+  git config --global init.defaultBranch main
+  git config --global color.ui auto
+
+
+Commands I used / practiced today
+-----------------------------------
+
+Start or get a repo:
+  git init
+  git clone https://github.com/sumitmishraecosoul/May2026_Sumit_Pathnex.git
+  cd May2026_Sumit_Pathnex
+
+Daily check what changed:
+  git status
+  git diff                    # unstaged changes
+  git diff --staged           # after git add, before commit
+  git log
+  git log --oneline
+  git log --oneline --graph --all
+
+Save work:
+  git add timings/Day06-06-May-2026.txt
+  git add "coding practice/Day06-06-May-2026.txt"
+  git add .
+  git commit -m "Added Day06 Git notes"
+
+Branches:
+  git branch                          # list
+  git branch Day06-06-May-2026        # create
+  git checkout Day06-06-May-2026      # switch
+  git switch -c Day06-06-May-2026     # create + switch (newer syntax)
+  git checkout main
+
+Remote (GitHub):
+  git remote -v
+  git remote add origin https://github.com/sumitmishraecosoul/May2026_Sumit_Pathnex.git
+  git push -u origin Day06-06-May-2026
+  git push origin main
+  git pull origin main
+
+Integrate work:
+  git checkout main
+  git pull origin main
+  git merge Day06-06-May-2026
+  git branch -d Day06-06-May-2026     # delete local branch after merge
+
+Rebase (class demo — on feature branch only):
+  git checkout Day06-06-May-2026
+  git fetch origin
+  git rebase origin/main
+  git rebase --abort                  # if something goes wrong
+
+Fix merge conflict (steps we practiced):
+  git merge Day04-04-May-2026         # example that caused conflict
+  git status                          # shows "both modified"
+  # edit files — remove <<<<<<< ======= >>>>>>> markers, keep correct text
+  git add conflicted-file.txt
+  git commit -m "Resolve merge conflict in README"
+  git merge --abort                   # cancel merge if I want to start over
+
+
+PR workflow (GitHub — what I did after push)
+----------------------------------------------
+  - Pushed my branch: git push -u origin <branch>
+  - On GitHub: Compare & pull request → main
+  - Added short description of what changed
+  - After merge: git checkout main && git pull origin main
+
+
+Best practices I noted (from class)
+-----------------------------------
+  - Commit often, but each commit should be one logical change
+  - Message: what + why (not just "fix" or "update")
+  - One branch per day / per feature (my PathNex day branches)
+  - Pull main before starting new branch
+  - Do not push secrets (.env, keys) — use .gitignore
+
+
+What I did on my own after class
+--------------------------------
+- git log --oneline on my repo and matched commits to each Linux day
+- Created Day06 branch, added files, git status → add → commit
+- Walked through opening a PR on GitHub (did not merge until I reviewed diff)
+
+
+Notes I wrote during class
+----------------------------
+
+

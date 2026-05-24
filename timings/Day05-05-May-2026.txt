@@ -6,9 +6,9 @@
 # 30 mins - Day05 timings + coding practice, commit on Day05 branch
 
 ## Tomorrow's Task
-# 1 hour - mixed revision: one problem each from files, permissions, processes, network, logs
-# 30 mins - write short cheat sheet for myself from Day01–Day05 coding practice files
-# PathNex question set / next module as assigned
+# PathNex Day 6 - Git class (branch, commit, PR, merge, rebase, conflicts)
+# 30 mins - quick Linux revision: systemctl status + tail -f one log file
+# Set up git config if not done: user.name and user.email
 
 ----------------------------------------
 ----------------------------------------
