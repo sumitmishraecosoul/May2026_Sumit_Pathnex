@@ -5,9 +5,5 @@
 # ~45 mins — practice on WSL after class
 # ~30 mins — set up this repo, Day01 files, git commit
 
-## Tomorrow's task
-# Continue Linux class notes in new day file (same repo workflow)
-# 30–45 mins revision: pwd, ls -la, find, grep on my own machine
-
 ----------------------------------------
 ----------------------------------------
