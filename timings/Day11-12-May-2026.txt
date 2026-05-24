@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2.5 hours - PathNex Docker Day 11 (volumes, networking, compose, registry, mini project)
+# 1 hour - docker-compose up with web + db, practiced volume mount
+# 30 mins - Day11 files + push from EC2, Docker 2-day block done
+
+## Tomorrow's Task
+# Revision - explain image vs container without looking at notes
+# 30 mins - tear down containers: docker compose down, docker system prune (careful)
+# PathNex next topic / assignment as shared in class
+
+----------------------------------------
+----------------------------------------
