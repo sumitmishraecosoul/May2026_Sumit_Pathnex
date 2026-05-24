@@ -1,13 +1,18 @@
 # May2026_Sumit_Pathnex
 
-My daily practice log for the May 2026 PathNex batch — timings, class notes, and hands-on Linux (and later topics) written day by day.
+My daily practice log for the May 2026 PathNex batch — timings, class notes, and hands-on Linux written day by day.
 
 ## Structure
 
-- `timings/` — what I studied and for how long each day  
-- `coding practice/` — commands, class notes, and practice from that day  
-- `brain/` — short pointers for myself about the repo and progress  
+- `timings/` — what I studied each day + tomorrow's plan  
+- `coding practice/` — commands and notes for that day only  
 
-## Day 01
+## Linux (May 2026)
 
-- **02-May-2026** — Linux: terminal basics, paths, `ls`, `cd`, `find`, `grep`, `awk`, `sed`
+| Day | Date | Topic | Branch |
+|-----|------|--------|--------|
+| 01 | 02-May | Files: ls, cd, find, grep, awk, sed | main |
+| 02 | 03-May | Permissions: chmod, chown, umask | Day02-03-May-2026 |
+| 03 | 03-May | Processes: ps, top, htop, kill, nice | Day03-03-May-2026 |
+| 04 | 04-May | Networking: curl, wget, ssh, ss, dig | Day04-04-May-2026 |
+| 05 | 05-May | Logs, journalctl, systemctl, apt | Day05-05-May-2026 |

@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2 hours - PathNex Linux Day 2 (permissions: chmod, chown, umask, ls -l)
+# 40 mins - fixed ownership on lab web root, practiced chmod on scripts
+# 25 mins - Day02 timings + coding practice files
+
+## Tomorrow's Task
+# Linux Day 3 class + Day03 notes (processes: ps, top, htop, kill, nice)
+# 45 mins - revision: chmod 755 vs 644, chown -R, read umask output
+# 30 mins - timings + coding practice, git commit on Day03 branch
+
+----------------------------------------
+----------------------------------------
