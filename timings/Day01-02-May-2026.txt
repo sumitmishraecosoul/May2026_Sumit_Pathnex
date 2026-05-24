@@ -1,9 +1,14 @@
 ----------------------------------------
 ----------------------------------------
-# What I did today (02 May 2026)
-# ~2 hrs — PathNex Linux Day 1 (basics + files: ls, cd, find, grep, awk, sed)
-# ~45 mins — practice on WSL after class
-# ~30 mins — set up this repo, Day01 files, git commit
+# What I did today
+# 2 hours - PathNex Linux Day 1 (basics + files: ls, cd, find, grep, awk, sed)
+# 45 mins - practice on WSL after class
+# 30 mins - repo setup, Day01 timings + coding practice files
+
+## Tomorrow's Task
+# Linux Day 2 class + write Day02 notes in coding practice
+# 1 hour - revision: pwd, ls -la, find, grep on my machine
+# 30 mins - timings + coding practice for next day, git commit on day2 branch
 
 ----------------------------------------
 ----------------------------------------
