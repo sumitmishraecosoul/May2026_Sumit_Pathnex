@@ -1,0 +1,92 @@
+Linux — Day 05 (05 May 2026)
+PathNex class notes + what I practiced today
+========================================
+
+Fifth Linux session — logs, systemd services, and package installs. This is
+what I use when a deploy "succeeded" but the app is still down: read logs,
+check service state, install a missing package, restart cleanly.
+
+
+What I understood today
+-------------------------
+Logs live in files under /var/log and in the systemd journal (journalctl).
+**tail -f** is for following a file live; **journalctl** is for services
+managed by systemd.
+
+**systemctl** is how we start/stop/enable services on modern Linux (Ubuntu,
+many RHEL versions). Old `service nginx start` still works on some boxes but
+class standard is systemctl.
+
+**apt** on Debian/Ubuntu vs **yum/dnf** on RHEL family — same idea: refresh
+metadata, install, upgrade.
+
+
+Commands I used / practiced today
+-----------------------------------
+
+Follow / read log files:
+  tail /var/log/syslog
+  tail -n 100 /var/log/nginx/error.log
+  tail -f /var/log/myapp/app.log          # follow live (Ctrl+C to stop)
+  less /var/log/auth.log
+
+Common log paths we opened:
+  /var/log/syslog
+  /var/log/auth.log
+  /var/log/nginx/access.log
+  /var/log/nginx/error.log
+  /var/log/kern.log
+
+systemd journal:
+  journalctl                          # whole journal (pager)
+  journalctl -u nginx.service         # one unit
+  journalctl -u nginx.service -f      # follow
+  journalctl -u nginx.service --since "1 hour ago"
+  journalctl -p err -b                # errors this boot
+
+Service management — systemctl:
+  systemctl status nginx
+  systemctl start nginx
+  systemctl stop nginx
+  systemctl restart nginx
+  systemctl reload nginx
+  systemctl enable nginx              # start on boot
+  systemctl disable nginx
+  systemctl is-active nginx
+  systemctl list-units --type=service --state=running
+
+Packaging — apt (Ubuntu lab VM):
+  sudo apt update
+  sudo apt upgrade -y                 # class: read prompts in prod, do not blind -y everywhere
+  sudo apt install tree -y
+  apt search nginx
+  apt show nginx
+  sudo apt remove tree
+
+RHEL-style (shown on slides, did not run on my Ubuntu VM):
+  sudo yum check-update
+  sudo yum install httpd -y
+  sudo dnf install httpd -y           # newer RHEL
+
+
+Troubleshooting flow we practiced
+---------------------------------
+  systemctl status myapp.service       # failed? why?
+  journalctl -u myapp.service -n 50    # last 50 lines
+  tail -f /var/log/myapp/error.log
+  sudo apt install missing-package
+  sudo systemctl restart myapp.service
+
+
+What I did on my own after class
+--------------------------------
+- tail -f on nginx access log while hitting the site with curl from Day 4
+- journalctl -u ssh --since today on lab VM
+- apt update && apt install htop (already had it — good refresh practice)
+- systemctl status docker and nginx on practice box
+
+
+Notes I wrote during class
+----------------------------
+
+
