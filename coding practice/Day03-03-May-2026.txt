@@ -1,0 +1,89 @@
+Linux — Day 03 (03 May 2026)
+PathNex class notes + what I practiced today
+========================================
+
+Third Linux session. Today was about what is actually running on the box —
+processes, CPU/memory usage, and how to stop or slow down a process when
+something misbehaves. This is the kind of thing we need when a deploy hangs
+or a pod/node feels stuck.
+
+
+What I understood today
+-------------------------
+Every command/program runs as a **process** with a **PID** (process ID).
+Parent/child processes matter (if parent dies, children can become orphans).
+
+On a busy server you care about:
+  - Is the process running?
+  - How much CPU/RAM is it using?
+  - Can I stop it cleanly or do I have to force kill?
+  - Can I lower its priority so other work gets CPU first?
+
+DevOps angle from class: before restarting a service blindly, check *what*
+is running and *how much* it is consuming — saves wrong restarts.
+
+
+Commands I used / practiced today
+-----------------------------------
+
+See processes:
+  ps                    # snapshot of my session
+  ps aux                # all processes, detailed (very common)
+  ps -ef                # full format listing
+  ps aux | grep nginx   # find if nginx is in the list
+
+Filter / find by name:
+  pgrep nginx           # PIDs matching name
+  pgrep -a nginx        # with command line
+  pkill nginx           # send signal by name (used carefully in lab)
+
+Live view (what is eating CPU/RAM right now):
+  top                   # default interactive view, q to quit
+  htop                  # nicer UI (installed on lab VM)
+
+Inside top/htop we noted:
+  - load average line (1/5/15 min)
+  - %CPU, %MEM columns
+  - sort by CPU (in top: shift+P)
+
+Stop / signal a process:
+  kill <PID>            # default SIGTERM (15) — polite shutdown
+  kill -15 <PID>        # same as above
+  kill -9 <PID>         # SIGKILL — hard stop, no cleanup
+  killall processname   # by name (class said: be sure of the name)
+
+Priority (who gets CPU first):
+  nice -n 10 long_running_command   # start with lower priority
+  nice -n -5 command                # higher priority (needs root usually)
+  renice -n 5 -p <PID>              # change running process
+
+Background / jobs (short demo in class):
+  command &             # run in background
+  jobs                  # list background jobs in this shell
+  fg %1                 # bring job 1 to foreground
+
+
+Small debugging flow we walked through (SRE-style)
+--------------------------------------------------
+When something feels slow on a node:
+  1. ps aux | grep <service>     — is it running?
+  2. top or htop                 — is CPU or memory pegged?
+  3. kill -15 <PID> then check   — did it exit cleanly?
+  4. only if stuck: kill -9 <PID>
+
+I ran this on a test sleep process in lab — kill -15 worked; we saw the
+difference when we had to use -9 on a stuck one.
+
+
+What I did on my own after class
+--------------------------------
+- ps aux | head and scrolled through — got familiar with columns USER, PID, %CPU, %MEM, COMMAND
+- top for a few minutes, watched CPU jump when I ran a small loop script
+- pgrep for sshd and nginx on the practice VM
+- nice -n 10 on a dummy while loop and saw it behave slower under load
+
+
+Notes I wrote during class
+----------------------------
+
+

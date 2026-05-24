@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2 hours - PathNex Linux Day 3 (processes: ps, top, htop, kill, nice)
+# 45 mins - checked running services on lab VM, tried kill and nice on test process
+# 30 mins - wrote Day03 timings + coding practice, commit on Day03 branch
+
+## Tomorrow's Task
+# Linux Day 4 class + Day04 notes (networking: curl, wget, ssh, ss, dig)
+# 1 hour - revision: ps aux, top, and finding a process by name with pgrep
+# 30 mins - timings + coding practice file, git commit on next branch
+
+----------------------------------------
+----------------------------------------
