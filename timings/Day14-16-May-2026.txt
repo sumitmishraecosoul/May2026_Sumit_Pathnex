@@ -1,0 +1,13 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2.5 hours - K8s Class 3 (Deployments, Services, rollouts)
+# 1 hour - rolling update nginx version, rollout undo
+# 30 mins - Day14 files + push from EC2
+
+## Tomorrow's Task
+# K8s Class 4 - ConfigMap, Secret, Ingress
+# Practice create secret, mount in pod, apply ingress yaml
+
+----------------------------------------
+----------------------------------------
