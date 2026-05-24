@@ -1,0 +1,102 @@
+Kubernetes — Day 12 (13 May 2026)
+PathNex K8s Class 1 — intro + architecture
+=========================================
+
+First Kubernetes day. Goal: understand what runs where, then run basic
+kubectl against a real cluster (minikube / kind / EKS student lab).
+
+
+What Kubernetes is (job meaning)
+--------------------------------
+K8s orchestrates **containers** across many machines. Companies use it for:
+  - auto scale apps up/down
+  - self-heal (restart failed pods)
+  - rolling updates without long downtime
+  - one way to deploy the same in dev, staging, prod
+
+Short: Docker runs a container; Kubernetes runs **many** containers reliably.
+
+
+Architecture (what I drew in class)
+---------------------------------
+
+CONTROL PLANE (brain of cluster):
+  kube-apiserver   — API entry; all kubectl talks to this
+  etcd             — cluster state database (desired + actual)
+  kube-scheduler   — picks which node runs a new pod
+  kube-controller-manager — keeps desired state (replicas, nodes, etc.)
+  cloud-controller-manager — cloud LB/volumes (on AWS EKS, etc.)
+
+WORKER NODE (where apps run):
+  kubelet          — makes sure pods run on this node
+  kube-proxy       — service networking rules
+  container runtime — containerd (Docker alone not default since K8s 1.24+)
+
+Smallest deploy unit: **Pod** (one or more containers sharing network/storage).
+
+
+Key objects introduced today
+----------------------------
+  Cluster  — whole K8s environment
+  Node     — one machine (VM/bare metal) in the cluster
+  Pod      — wrapper around container(s)
+  Namespace — virtual folders (default, kube-system, …)
+
+
+Default namespaces
+------------------
+  default       — my apps if I don't specify
+  kube-system   — DNS, CNI, core addons
+  kube-public   — rarely touch
+  kube-node-lease — node heartbeats
+
+
+How K8s fits DevOps roadmap (class note)
+----------------------------------------
+Linux → Git → AWS → Docker → **Kubernetes** → CI/CD (Helm, pipelines) → monitoring
+
+
+Commands I practiced today
+--------------------------
+  kubectl version --client
+  kubectl version
+  kubectl cluster-info
+  kubectl get nodes
+  kubectl get nodes -o wide
+  kubectl describe node <node-name>
+
+  kubectl get namespaces
+  kubectl get ns
+  kubectl get pods -A
+  kubectl get pods -n kube-system
+
+  kubectl run nginx --image=nginx --port=80
+  kubectl get pods
+  kubectl get pods -o wide
+  kubectl describe pod nginx
+  kubectl logs nginx
+  kubectl delete pod nginx
+
+  # context / config (useful on EKS)
+  kubectl config get-contexts
+  kubectl config use-context <context-name>
+
+
+Push from EC2
+-------------
+  git checkout -b Day12-13-May-2026
+  git add timings/Day12-13-May-2026.txt "coding practice/Day12-13-May-2026.txt"
+  git commit -m "Added Day12 K8s Class 1 (13 May 2026)"
+  git push -u origin Day12-13-May-2026
+
+
+What I did on my own
+--------------------
+- Watched which pods live in kube-system
+- Noted Ready column on nodes (SchedulingDisabled means cordoned)
+
+
+Notes from class
+----------------
+
+

@@ -6,9 +6,9 @@
 # 30 mins - Day11 files + push from EC2, Docker 2-day block done
 
 ## Tomorrow's Task
-# Revision - explain image vs container without looking at notes
-# 30 mins - tear down containers: docker compose down, docker system prune (careful)
-# PathNex next topic / assignment as shared in class
+# Kubernetes Class 1 (13 May) - architecture, cluster, node, pod, basic kubectl
+# 30 mins - Docker revision: image vs container
+# Day12 files + push from EC2
 
 ----------------------------------------
 ----------------------------------------
