@@ -1,0 +1,81 @@
+AWS — Day 09 (10 May 2026)
+PathNex class notes — data platforms + delivery (part 3 of 3)
+========================================
+
+Third AWS day — batch/ETL, shared files, easy app deploy, CDN, data transfer
+appliance, and the Code* CI/CD chain plus tracing. This closes the 32-service
+overview from PathNex.
+
+
+Services from class (Day 9)
+---------------------------
+
+23. AWS Batch — batch jobs at scale
+    - Job queues, compute environments; good for large offline processing
+    - Can use Spot for cost; reads/writes often via S3
+
+24. AWS Glue — serverless ETL
+    - Crawlers discover schema; jobs transform data for analytics
+    - Works with S3, Redshift, Spark-style jobs (Python/Scala)
+
+25. EFS — shared file storage for Linux
+    - NFS mount on multiple EC2; grows automatically
+    - Content repos, shared config, some analytics workloads
+
+26. Elastic Beanstalk — PaaS deploy
+    - Upload app; AWS handles capacity, load balancer, health
+    - Java, Python, Node, .NET, etc.; can wire RDS/S3 behind it
+
+27. CloudFront — CDN
+    - Edge caches static/dynamic content close to users
+    - Origins: S3, ALB, custom; pairs with WAF/Shield
+
+28. Snowball — physical data transfer
+    - Ship appliance for huge datasets when network transfer is too slow
+    - Snowball Edge adds local compute
+
+29. CodePipeline — CI/CD orchestration
+    - Stages: source → build → deploy; plugs into GitHub/CodeCommit
+
+30. CodeBuild — managed builds
+    - compile, test, produce artifacts; scales automatically
+
+31. CodeDeploy — deployment automation
+    - Rolling, blue/green, canary to EC2, Lambda, ECS
+    - Zero-downtime goal when configured correctly
+
+32. X-Ray — distributed tracing
+    - Trace requests across Lambda, EC2, API Gateway
+    - Find latency bottlenecks in microservices
+
+
+AWS CLI / console practice from today
+-------------------------------------
+  aws codepipeline list-pipelines
+  aws codebuild list-projects
+  aws deploy list-applications
+  aws cloudfront list-distributions
+  aws efs describe-file-systems
+  aws batch describe-compute-environments
+  aws glue get-databases
+
+
+Simple CI/CD picture I drew (from class)
+----------------------------------------
+  Git push → CodePipeline triggered
+         → CodeBuild (test + artifact)
+         → CodeDeploy to EC2/ASG (or Beanstalk/Lambda per design)
+  CloudWatch alarms + X-Ray if something slow after release
+
+
+What I did on my own after class
+--------------------------------
+- Listed CodePipeline stages in console (did not run full pipeline — saves cost)
+- Read CloudFront distribution settings for S3 static site example
+- Wrote three lines in notebook: when Batch vs Glue vs Lambda for data jobs
+
+
+Notes from class
+----------------
+
+
