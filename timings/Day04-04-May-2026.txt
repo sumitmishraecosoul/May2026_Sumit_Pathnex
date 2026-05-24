@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2 hours - PathNex Linux Day 4 (networking: curl, wget, ssh, ss, dig)
+# 45 mins - tested curl on APIs, ssh into lab VM, ss to see listening ports
+# 30 mins - Day04 timings + coding practice, commit on Day04 branch
+
+## Tomorrow's Task
+# Linux Day 5 class + Day05 notes (logs: tail, journalctl, /var/log)
+# 1 hour - revision: curl headers, ssh key login, ss -tulpn on lab box
+# 30 mins - timings + coding practice for next day, git commit on next branch
+
+----------------------------------------
+----------------------------------------
