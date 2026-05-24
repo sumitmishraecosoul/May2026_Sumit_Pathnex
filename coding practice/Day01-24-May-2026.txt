@@ -1,0 +1,153 @@
+================================================================================
+LINUX DAY 1 — PathNex | Session 1 of 5
+Date: 24-May-2026
+Focus: Linux basics + file & directory operations (real-world + interview-ready)
+================================================================================
+
+--------------------------------------------------------------------------------
+1. LINUX BASICS (every DevOps engineer must know)
+--------------------------------------------------------------------------------
+
+What is Linux?
+- Open-source Unix-like OS; servers, cloud, containers, CI/CD all run on it.
+- Kernel + user space (shell, tools, apps).
+
+Shell
+- Default interactive CLI (bash on most distros; also sh, zsh).
+- Prompt shows user@host:path$ — you type commands, shell runs programs.
+
+Paths
+- /           = root (everything hangs from here)
+- /home/user  = your home (~ or $HOME)
+- /etc        = config
+- /var/log    = logs
+- /tmp        = temp files
+- .           = current directory
+- ..          = parent directory
+
+Tab completion    → fewer typos, faster
+man command       → manual (q to quit)
+command --help    → short help
+
+Interview tip: "Linux is the OS; bash is the shell. DevOps work is mostly in user space via CLI and automation."
+
+--------------------------------------------------------------------------------
+2. FILE & DIRECTORY OPERATIONS
+--------------------------------------------------------------------------------
+
+--- Navigation & listing ---
+
+pwd                 # print working directory
+cd /path            # change directory
+cd ~                # home
+cd -                # previous directory
+ls                  # list
+ls -l               # long (permissions, owner, size, date)
+ls -la              # include hidden (.*)
+ls -lh              # human-readable sizes
+ls -lt              # sort by time
+
+mkdir dirname
+mkdir -p a/b/c      # create parent dirs
+rmdir emptydir
+rm file             # delete file (careful!)
+rm -r dir           # recursive delete directory
+
+cp source dest
+cp -r dir1 dir2     # copy directory
+mv old new          # move or rename
+
+touch file.txt      # create empty file or update timestamp
+
+--- Viewing files ---
+
+cat file            # whole file (small files)
+less file           # page through (q quit, / search)
+head -n 20 file
+tail -n 20 file
+wc -l file          # line count
+
+--- find (locate files by name, type, time, size) ---
+
+find /var/log -name "*.log"
+find . -type f -mtime -7          # files modified in last 7 days
+find /home -user sumit -type f
+find . -size +100M                # files larger than 100MB
+find . -name "*.conf" -exec ls -l {} \;
+
+Interview tip: find walks the filesystem; locate uses a DB (updatedb) and is faster but can be stale.
+
+--- grep (search text inside files) ---
+
+grep "error" /var/log/syslog
+grep -i "failed" app.log          # case insensitive
+grep -r "password" /etc/          # recursive
+grep -n "ERROR" app.log           # show line numbers
+grep -v "debug" app.log           # invert (lines NOT matching)
+ps aux | grep nginx               # pipeline: filter command output
+
+--- awk (column processing) ---
+
+ps aux | awk '{print $1, $11}'    # user + command
+awk -F: '{print $1}' /etc/passwd  # first field, colon delimiter
+df -h | awk 'NR>1 {print $5, $6}' # skip header, print use% and mount
+
+--- sed (stream editor — substitute, delete lines) ---
+
+sed 's/old/new/g' file.txt        # replace all on each line
+sed -i 's/debug/info/g' file.txt  # in-place (backup: sed -i.bak)
+sed -n '10,20p' file.txt          # print lines 10-20
+cat file | sed '/^#/d'            # delete comment lines
+
+Interview tip: grep finds lines; awk splits fields; sed edits text. Together they replace many one-off scripts.
+
+--------------------------------------------------------------------------------
+3. PRACTICE EXERCISES (do on Linux VM, WSL, or cloud shell)
+--------------------------------------------------------------------------------
+
+[ ] pwd && ls -la ~
+[ ] mkdir -p ~/pathnex/day01 && cd ~/pathnex/day01
+[ ] touch notes.txt && echo "Linux Day 1" >> notes.txt && cat notes.txt
+[ ] find /etc -name "*.conf" 2>/dev/null | head -5
+[ ] grep -r "PATH" /etc/environment /etc/profile 2>/dev/null
+[ ] ps aux | head -5 | awk '{print $2, $11}'    # PID + command
+[ ] Copy notes.txt to notes-backup.txt; mv notes-backup.txt backup.txt
+
+--------------------------------------------------------------------------------
+4. QUICK REFERENCE CHEAT SHEET (Day 1)
+--------------------------------------------------------------------------------
+
+| Task              | Command                          |
+|-------------------|----------------------------------|
+| Where am I?       | pwd                              |
+| List files        | ls -lah                          |
+| Change dir        | cd path                          |
+| Find file         | find . -name "pattern"           |
+| Search in files   | grep -rn "text" .                |
+| Columns           | awk '{print $1}'                 |
+| Replace text      | sed 's/a/b/g' file               |
+| Create dir        | mkdir -p path                    |
+| View file         | less file                        |
+
+--------------------------------------------------------------------------------
+5. COMING IN DAY 2–5 (full course map)
+--------------------------------------------------------------------------------
+
+Day 2: chmod, chown, umask
+Day 3: ps, top, htop, kill, nice
+Day 4: curl, wget, ssh, ss, dig
+Day 5: tail, journalctl, /var/log, systemctl, apt/yum
+
+--------------------------------------------------------------------------------
+6. NOTES / QUESTIONS (fill during class)
+--------------------------------------------------------------------------------
+
+# My notes:
+
+
+# Commands I want to practice again:
+
+
+================================================================================
+End of Linux Day 1 — coding practice
+================================================================================
