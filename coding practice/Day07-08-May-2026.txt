@@ -1,0 +1,94 @@
+AWS — Day 07 (08 May 2026)
+PathNex class notes — core AWS (part 1 of 3)
+========================================
+
+First AWS day. Class covered the building blocks we touch on almost every
+DevOps task: compute, identity, network, storage, DNS, logging, monitoring,
+containers, and serverless. (07 May was Sunday — no class; notes are for 08 May.)
+
+
+What I understood today
+-------------------------
+AWS is a set of services; we combine them. Most of my work starts with:
+**who can do what (IAM)** → **where it runs (VPC/EC2)** → **where data lives (S3)** →
+**how we watch it (CloudWatch/CloudTrail)**.
+
+
+Services from class (Day 7)
+---------------------------
+
+1. EC2 — virtual servers
+   - Pick instance type (CPU/RAM), AMI (OS image), storage, VPC subnet
+   - On-Demand / Reserved / Spot pricing
+   - Auto Scaling adds/removes instances by demand
+   - Used with security groups, IAM roles, S3 for artifacts
+
+2. IAM — who can access what
+   - Users, groups, roles, policies (JSON permissions)
+   - MFA for extra login security
+   - Roles for EC2/Lambda so we do not hardcode keys on servers
+
+3. VPC — private network in AWS
+   - Subnets (public/private), route tables, Internet Gateway
+   - Security groups (instance firewall) vs NACL (subnet level)
+   - Multi-AZ for availability; VPN/Direct Connect for hybrid
+
+4. S3 — object storage
+   - Buckets and objects; storage classes (Standard, IA, Glacier, etc.)
+   - Versioning, encryption, lifecycle rules
+   - Triggers for Lambda, origin for CloudFront
+
+5. Session Manager — shell without SSH port open
+   - Access EC2 via Systems Manager; no inbound 22 needed
+   - Good for instances in private subnets; sessions can be logged
+
+6. Route 53 — DNS
+   - Register domains, A/AAAA/CNAME records
+   - Routing policies: weighted, latency, failover, geolocation
+   - Health checks for failover
+
+7. CloudTrail — API audit trail
+   - Who called which AWS API, when, from where
+   - Logs to S3; used for compliance and incident review
+
+8. CloudWatch — metrics, logs, alarms
+   - EC2 CPU, custom app metrics, log groups
+   - Alarms → SNS, Auto Scaling actions, etc.
+
+9. EKS — managed Kubernetes
+   - Control plane managed by AWS; we manage worker nodes/node groups
+   - Integrates with VPC, IAM, CloudWatch; fits CI/CD pipelines
+
+10. Auto Scaling — scale capacity automatically
+    - Target tracking, step scaling; works with ELB and ASG across AZs
+
+11. Lambda — run code without managing servers
+    - Event-driven (S3 upload, API Gateway, etc.)
+    - Pay per invocation/duration; good for small automation
+
+
+AWS CLI / console practice from today
+-------------------------------------
+  aws sts get-caller-identity
+  aws ec2 describe-instances --region ap-south-1
+  aws ec2 run-instances --image-id ami-xxxxx --instance-type t2.micro --key-name mykey
+  aws s3 mb s3://my-unique-bucket-name-2026
+  aws s3 cp notes.txt s3://my-bucket/
+  aws s3 ls s3://my-bucket/
+  aws iam list-users
+  aws iam list-roles
+  aws logs describe-log-groups
+  aws cloudtrail describe-trails
+
+
+What I did on my own after class
+--------------------------------
+- Created IAM user with console access (no admin on personal lab)
+- Launched one EC2 in default VPC, checked public IP, stopped instance to save cost
+- Uploaded a text file to S3 and enabled block public access on bucket
+
+
+Notes from class
+----------------
+
+

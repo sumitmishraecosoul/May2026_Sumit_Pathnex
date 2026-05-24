@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2.5 hours - PathNex AWS Day 7 (EC2, IAM, VPC, S3, Route53, CloudTrail, CloudWatch, EKS, Lambda, etc.)
+# 45 mins - free tier console: launched t2.micro, created S3 bucket, checked IAM user
+# 30 mins - Day07 timings + coding practice, commit on Day07 branch
+
+## Tomorrow's Task
+# AWS Day 8 - security + databases (Shield, WAF, GuardDuty, RDS, DynamoDB, ...)
+# 1 hour - revision: EC2 connect via Session Manager, S3 upload one file
+# 30 mins - Day08 files + git commit on Day08-09-May-2026 branch
+
+----------------------------------------
+----------------------------------------
