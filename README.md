@@ -21,5 +21,7 @@ My daily practice log for the May 2026 PathNex batch.
 | 07 | 08-May | AWS core (EC2–Lambda) — *skip 07 May (Sun)* | Day07-08-May-2026 |
 | 08 | 09-May | AWS security + databases | Day08-09-May-2026 |
 | 09 | 10-May | AWS data + CI/CD + CloudFront | Day09-10-May-2026 |
+| 10 | 11-May | Docker part 1 — concepts, Dockerfile, core commands | Day10-11-May-2026 |
+| 11 | 12-May | Docker part 2 — volumes, networking, compose, mini project | Day11-12-May-2026 |
 
 **Note:** Day number increases every session; calendar date skips Sundays (no class).

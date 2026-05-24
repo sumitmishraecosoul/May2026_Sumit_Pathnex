@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2.5 hours - PathNex Docker Day 10 (concepts, images, containers, Dockerfile, core commands)
+# 1 hour - pulled nginx, ran container, built a small custom image on EC2
+# 30 mins - Day10 files + push from EC2 (Day07 git steps)
+
+## Tomorrow's Task
+# Docker Day 11 - volumes, networking, docker-compose, mini project, interview prep
+# 45 mins - revision: docker ps, run -d -p, docker build -t
+# 30 mins - Day11 files + push from EC2 on Day11-12-May-2026 branch
+
+----------------------------------------
+----------------------------------------
