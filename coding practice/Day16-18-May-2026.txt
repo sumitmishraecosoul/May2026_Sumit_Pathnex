@@ -1,0 +1,96 @@
+Kubernetes — Day 16 (18 May 2026)
+PathNex K8s Class 5 — production building blocks
+=================================================
+
+
+Probes (health checks on EKS/production)
+----------------------------------------
+  liveness   — fail → restart container
+  readiness  — fail → remove from Service endpoints
+  startup    — slow apps; blocks other probes until success
+
+Example in deployment yaml:
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 5
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 8080
+
+  kubectl describe pod <name> | grep -A10 Liveness
+  kubectl get events
+
+
+Affinity (where pods run)
+-------------------------
+  nodeAffinity     — pick nodes (SSD, GPU, zone)
+  podAffinity      — run near other pods
+  podAntiAffinity  — spread replicas across nodes (HA)
+
+  kubectl get nodes --show-labels
+  kubectl describe pod <name> | grep -A20 Affinity
+
+
+Taints & tolerations
+--------------------
+Node taint keeps pods off unless tolerated.
+
+  kubectl taint nodes node1 key=gpu:NoSchedule
+  kubectl taint nodes node1 key=gpu:NoSchedule-   # remove
+
+Pod needs tolerations matching taint in yaml.
+
+
+Other controllers (class overview + commands)
+---------------------------------------------
+DaemonSet — one pod per node (logging agents):
+  kubectl get daemonset -n kube-system
+
+StatefulSet — stable names + storage (DBs):
+  kubectl get statefulset
+
+Job / CronJob — batch / scheduled:
+  kubectl create job pi --image=perl -- perl -Mbignum=bpi -wle 'print bpi(20)'
+  kubectl get jobs
+  kubectl create cronjob hello --image=busybox --schedule="*/5 * * * *" -- echo hi
+  kubectl get cronjob
+
+
+Network policy (security between pods)
+--------------------------------------
+  kubectl get networkpolicy
+  kubectl describe networkpolicy <name>
+
+
+Useful production kubectl
+-------------------------
+  kubectl top nodes
+  kubectl top pods
+  kubectl cordon <node>
+  kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
+  kubectl uncordon <node>
+  kubectl api-resources
+  kubectl explain pod.spec.containers
+
+
+EKS note from class
+-------------------
+Control plane cost + worker nodes; check aws.amazon.com/eks/pricing/
+
+
+Push from EC2 — branch Day16-18-May-2026
+
+
+What I did on my own
+--------------------
+- Broke liveness path on purpose, watched restart count increment
+
+
+Notes from class
+----------------
+
+
