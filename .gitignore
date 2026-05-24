@@ -2,3 +2,6 @@
 Thumbs.db
 *.swp
 *~
+
+# Personal notes — keep local only
+brain/
