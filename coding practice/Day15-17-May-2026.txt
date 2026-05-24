@@ -1,0 +1,71 @@
+Kubernetes — Day 15 (17 May 2026)
+PathNex K8s Class 4 — ConfigMap, Secret, Ingress
+=================================================
+
+
+ConfigMap (non-secret config)
+-----------------------------
+  kubectl create configmap app-config --from-literal=ENV=prod
+  kubectl create configmap nginx-html --from-file=index.html
+  kubectl get configmap
+  kubectl describe configmap app-config
+
+Use in pod:
+  - envFrom / valueFrom configMapKeyRef
+  - volume mount → files under /etc/config
+
+
+Secret (sensitive data — still base64 in etcd; enable encryption at rest in prod)
+---------------------------------------------------------------------------------
+  kubectl create secret generic db-pass --from-literal=password=pathnex123
+  kubectl create secret tls tls-secret --cert=tls.crt --key=tls.key
+  kubectl get secrets
+  kubectl describe secret db-pass
+  # decode only for debug: kubectl get secret db-pass -o jsonpath='{.data.password}' | base64 -d
+
+Never commit real secrets to Git — use sealed-secrets / external secret operator in real jobs.
+
+
+Ingress (HTTP/S routing from outside)
+-------------------------------------
+Needs Ingress Controller (nginx-ingress, AWS ALB ingress controller on EKS).
+
+  kubectl apply -f ingress.yaml
+  kubectl get ingress
+  kubectl describe ingress web-ing
+
+Example paths in class:
+  /api  → backend service
+  /     → frontend service
+
+
+Env vs volume mount (when to use what)
+--------------------------------------
+  env vars       — small settings, feature flags
+  mounted files  — config files, nginx.conf, multi-line configs
+
+
+Commands practiced today
+------------------------
+  kubectl apply -f deployment-with-config.yaml
+  kubectl exec deploy/web -- printenv | grep ENV
+  kubectl logs -l app=web
+
+Troubleshooting tips from class:
+  - ConfigMap/Secret must exist in same namespace
+  - After ConfigMap change, may need pod restart (unless reloader tool)
+  - Ingress shows no ADDRESS → controller not installed or wrong class
+
+
+Push from EC2 — branch Day15-17-May-2026
+
+
+What I did on my own
+--------------------
+- Created ingress pointing to nginx service on minikube (minikube tunnel / addon)
+
+
+Notes from class
+----------------
+
+

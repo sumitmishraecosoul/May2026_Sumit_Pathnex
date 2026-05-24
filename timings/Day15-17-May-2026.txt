@@ -1,0 +1,13 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2.5 hours - K8s Class 4 (ConfigMap, Secret, Ingress)
+# 45 mins - mounted config as file + env in deployment
+# 30 mins - Day15 files + push from EC2
+
+## Tomorrow's Task
+# K8s Class 5 - probes, affinity, taints, Jobs, production concepts
+# Review ingress path rules and TLS section from notes
+
+----------------------------------------
+----------------------------------------

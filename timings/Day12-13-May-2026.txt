@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2.5 hours - PathNex K8s Class 1 (what is K8s, architecture, cluster/node/pod, control plane)
+# 45 mins - kubectl on lab cluster: nodes, namespaces, first pod
+# 30 mins - Day12 files + push from EC2
+
+## Tomorrow's Task
+# K8s Class 2 - pods deep dive, labels, selectors, troubleshoot pods
+# 1 hour - practice kubectl get/describe/logs/exec on a failing pod
+# Day13 files + push from EC2
+
+----------------------------------------
+----------------------------------------

@@ -1,0 +1,82 @@
+Kubernetes — Day 14 (16 May 2026)
+PathNex K8s Class 3 — Deployments & Services
+============================================
+
+
+Deployment
+----------
+Manages ReplicaSet → keeps N pod replicas, rolling updates, rollback.
+
+  kubectl create deployment web --image=nginx:1.25 --replicas=3
+  kubectl get deploy
+  kubectl get rs
+  kubectl get pods -l app=web
+
+Scale:
+  kubectl scale deployment web --replicas=5
+
+Rolling update:
+  kubectl set image deployment/web nginx=nginx:1.26
+  kubectl rollout status deployment/web
+  kubectl rollout history deployment/web
+
+Rollback:
+  kubectl rollout undo deployment/web
+  kubectl rollout undo deployment/web --to-revision=2
+
+
+Services (stable access to pods)
+--------------------------------
+Type          When to use
+ClusterIP     default; internal only
+NodePort      dev/test; port 30000-32767 on each node
+LoadBalancer  cloud LB (EKS → AWS ELB)
+ExternalName  CNAME to external DNS
+Headless      ClusterIP: None; direct pod DNS (StatefulSets)
+
+  kubectl expose deployment web --port=80 --target-port=80 --name=web-svc
+  kubectl get svc web-svc
+  kubectl describe svc web-svc
+
+NodePort example:
+  kubectl expose deployment web --type=NodePort --port=80 --name=web-np
+  kubectl get svc web-np
+
+LoadBalancer (on EKS):
+  kubectl expose deployment web --type=LoadBalancer --port=80 --name=web-lb
+  kubectl get svc web-lb -w
+
+Test from another pod:
+  kubectl run curl --image=curlimages/curl -it --rm -- curl http://web-svc
+
+
+Commands practiced today
+------------------------
+  kubectl apply -f deployment.yaml
+  kubectl apply -f service.yaml
+  kubectl get deploy,rs,pods,svc
+  kubectl delete deployment web
+  kubectl delete svc web-svc
+
+
+Interview one-liners (class)
+----------------------------
+Q: Deployment vs ReplicaSet?
+A: Deployment manages ReplicaSet; we usually only create Deployment.
+
+Q: Why Service if pods have IPs?
+A: Pods change IP; Service gives stable VIP + load balancing.
+
+
+Push from EC2 — branch Day14-16-May-2026
+
+
+What I did on my own
+--------------------
+- Updated image to broken tag, watched rollout pause, rolled back
+
+
+Notes from class
+----------------
+
+

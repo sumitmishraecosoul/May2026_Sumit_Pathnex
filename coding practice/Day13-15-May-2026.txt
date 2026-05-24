@@ -1,0 +1,82 @@
+Kubernetes — Day 13 (15 May 2026)
+PathNex K8s Class 2 — pods, labels, selectors
+=============================================
+(14 May was Sunday — no class)
+
+
+Pods deeply
+-----------
+Pod = one or more containers, shared IP, scheduled together.
+Pods are ephemeral — IP changes on restart → Services fix stable access later.
+
+
+Labels & selectors (how traffic finds pods later)
+-------------------------------------------------
+  labels:      key=value tags on objects
+  selectors:   query those labels
+
+  kubectl get pods --show-labels
+  kubectl get pods -l app=nginx
+  kubectl label pod nginx tier=frontend
+  kubectl label pod nginx env- --overwrite   # remove label key env if needed
+
+
+Commands I practiced today
+--------------------------
+Create / inspect:
+  kubectl apply -f pod.yaml
+  kubectl get pods -w
+  kubectl get pod <name> -o yaml
+  kubectl describe pod <name>
+
+Debug (interview favorites):
+  kubectl logs <pod>
+  kubectl logs <pod> -c <container>    # multi-container pod
+  kubectl logs <pod> --previous        # crashed container
+  kubectl exec -it <pod> -- /bin/bash
+  kubectl exec <pod> -- env
+
+Events & status:
+  kubectl get events --sort-by=.metadata.creationTimestamp
+  kubectl describe pod <name> | grep -A5 Events
+
+Delete:
+  kubectl delete pod <name>
+  kubectl delete -f pod.yaml
+
+Example pod.yaml we applied:
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: web
+    labels:
+      app: web
+  spec:
+    containers:
+    - name: nginx
+      image: nginx:1.25
+      ports:
+      - containerPort: 80
+
+
+Troubleshoot flow from class
+----------------------------
+  1. kubectl get pods          — Status? Ready?
+  2. kubectl describe pod      — Events at bottom
+  3. kubectl logs              — app error
+  4. kubectl exec              — curl localhost inside pod
+
+
+Push from EC2 — branch Day13-15-May-2026
+
+
+What I did on my own
+--------------------
+- Intentionally used wrong image tag, read ImagePullBackOff in describe
+- Added liveness probe in yaml (preview for later day)
+
+
+Notes from class
+----------------
+
+

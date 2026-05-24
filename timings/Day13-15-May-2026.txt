@@ -1,0 +1,13 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2.5 hours - K8s Class 2 (pods, labels, selectors, troubleshoot)
+# 1 hour - lab: broken pod CrashLoopBackOff, fixed image name with describe/logs
+# 30 mins - Day13 files + push from EC2
+
+## Tomorrow's Task
+# K8s Class 3 - Deployments, Services, rollouts
+# Practice: kubectl scale, rollout undo, expose NodePort
+
+----------------------------------------
+----------------------------------------

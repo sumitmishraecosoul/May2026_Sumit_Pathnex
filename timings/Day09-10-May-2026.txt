@@ -6,9 +6,9 @@
 # 30 mins - Day09 files + push from EC2, finished AWS 3-day block
 
 ## Tomorrow's Task
-# Revision - one service each from Day 7, 8, 9 (write one-line purpose from memory)
-# Git - merge latest AWS branches to main via PR when ready
-# PathNex next module / assignment as given in class
+# Docker Day 10 class (11 May) - images, containers, Dockerfile, core docker commands
+# 45 mins - install docker on EC2, pull and run nginx
+# 30 mins - Day10 timings + coding practice, push from EC2
 
 ----------------------------------------
 ----------------------------------------

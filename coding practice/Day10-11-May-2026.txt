@@ -1,0 +1,124 @@
+Docker — Day 10 (11 May 2026)
+PathNex class notes — part 1 of 2
+========================================
+
+First Docker day. Class explained what problem Docker solves, then we ran real
+containers on EC2. Tomorrow is volumes, networking, and compose.
+
+
+What Docker is (simple)
+-----------------------
+Docker packages an app + its dependencies into a **container** — a small isolated
+environment that runs the same on my laptop, EC2, or production.
+
+Companies use it because:
+  - dev/test/prod all behave the same
+  - starts fast compared to full VMs
+  - fits CI/CD (build image once, run anywhere)
+  - each microservice can run in its own container
+
+
+Image vs container (clear difference)
+-------------------------------------
+  **Image**  = read-only recipe/template (like a class blueprint)
+  **Container** = running instance of that image (like a student actually doing the lab)
+
+One image → many containers. Delete container → image still on disk.
+
+
+Dockerfile basics (build your own image)
+----------------------------------------
+Example from class (Node app):
+  FROM node:14
+  WORKDIR /user/pathnex
+  COPY . .
+  RUN npm install
+  EXPOSE 3000
+  CMD ["npm", "start"]
+
+Instructions mean:
+  FROM     — base image to start from
+  WORKDIR  — directory inside image
+  COPY     — add my code
+  RUN      — install deps at build time
+  EXPOSE   — document port
+  CMD      — what runs when container starts
+
+
+Docker Engine (what runs containers)
+------------------------------------
+  - **docker** CLI — what I type
+  - **daemon** — background (class noted many setups now use **containerd** under the hood)
+  - REST API — tools/automation talk to Docker
+
+
+Install Docker on Ubuntu (EC2 lab)
+----------------------------------
+  sudo apt update
+  sudo apt install docker.io -y
+  sudo systemctl enable --now docker
+  docker --version
+  sudo systemctl status docker
+  # optional: sudo usermod -aG docker $USER   then re-login
+
+
+Commands I used today (must-know for jobs)
+-------------------------------------------
+
+Images from registry:
+  docker pull nginx
+  docker images
+
+Run containers:
+  docker run -it nginx /bin/bash          # interactive shell, exit stops container
+  docker run -d --name nginx-container nginx   # detached background
+  docker ps                               # running only
+  docker ps -a                            # including stopped
+
+Lifecycle:
+  docker stop nginx-container
+  docker start nginx-container
+  docker rm nginx-container               # remove container (stopped first)
+  docker rmi nginx                        # remove image if not needed
+
+Build my own image:
+  docker build -t nginx-image .
+  docker tag nginx-image myuser/nginx-image:v1
+
+Inspect / debug:
+  docker inspect nginx-container
+  docker logs nginx-container
+  docker exec -it nginx-container /bin/bash
+
+
+Mini project started today
+--------------------------
+Goal: run nginx in Docker and open it in browser.
+  docker run -d --name nginx-container -p 8080:80 nginx
+  curl localhost:8080
+  docker logs nginx-container
+
+Tomorrow I add volumes + compose for a slightly bigger setup.
+
+
+Push from EC2 (same as Day 7)
+-----------------------------
+  cd ~/May2026_Sumit_Pathnex
+  git checkout main && git pull origin main
+  git checkout -b Day10-11-May-2026
+  git add timings/Day10-11-May-2026.txt "coding practice/Day10-11-May-2026.txt"
+  git commit -m "Added Day10 Docker notes (11 May 2026)"
+  git push -u origin Day10-11-May-2026
+
+
+What I did on my own after class
+--------------------------------
+- Pulled alpine and nginx, compared image sizes with docker images
+- Wrote a 3-line Dockerfile that FROM nginx and copied a custom index.html
+- Ran docker build and docker run -p 8080:80
+
+
+Notes from class
+----------------
+
+
