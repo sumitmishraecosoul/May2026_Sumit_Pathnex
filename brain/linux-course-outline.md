@@ -1,19 +1,13 @@
-# Linux Course — PathNex (5 sessions)
+# May2026_Sumit_Pathnex — my notes
 
-| Day | Branch   | Focus |
-|-----|----------|--------|
-| 1   | `day1`   | Basics, file & directory ops (`ls`, `cd`, `find`, `grep`, `awk`, `sed`) |
-| 2   | `day2`   | Permissions (`chmod`, `chown`, `umask`) |
-| 3   | `day3`   | Processes (`ps`, `top`, `htop`, `kill`, `nice`) |
-| 4   | `day4`   | Networking (`curl`, `wget`, `ssh`, `ss`, `dig`) |
-| 5   | `day5`   | Logs, `journalctl`, `systemctl`, packaging (`apt`/`yum`) |
+Repo: https://github.com/sumitmishraecosoul/May2026_Sumit_Pathnex
 
-## Daily Git workflow
+## Done so far
+- **24 May 2026 (Day 01)** — Linux basics, file & directory commands. Files in `timings/` and `coding practice/`.
 
-1. `git checkout main` && `git pull`
-2. `git checkout -b dayN` (or switch to existing `dayN`)
-3. Add `timings/DayNN-DD-Mon-YYYY.txt` and `coding practice/DayNN-DD-Mon-YYYY.txt`
-4. `git add .` → `git commit -m "Added DayNN files"` → `git push -u origin dayN`
-5. Open PR → merge to `main` → delete branch (optional)
+## How I update this repo each day
+1. Pull latest `main`
+2. New branch if needed (e.g. `day1`, `day2`) → add that day's files → commit → push
+3. Open PR on GitHub → merge → delete branch if I want a clean history
 
-Repo naming: `May2026_Sumit_Pathnex`
+Daily files naming: `Day01-24-May-2026.txt` (day number + date).

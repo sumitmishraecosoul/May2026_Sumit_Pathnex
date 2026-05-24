@@ -1,14 +1,13 @@
 ----------------------------------------
 ----------------------------------------
 # What I did today
-# 2 hours - Linux Day 1 (PathNex): basics, file & directory ops, practice on terminal
-# 30 mins - Git workflow: day1 branch, timings + coding practice files
-# 30 mins - Hands-on: ls, cd, find, grep exercises
+# ~2 hrs — PathNex Linux Day 1 (basics + files: ls, cd, find, grep, awk, sed)
+# ~45 mins — practice on WSL after class
+# ~30 mins — set up this repo, Day01 files, git commit on day1 branch
 
-## Tomorrow's Task (Linux Day 2)
-# Permissions & ownership: chmod, chown, umask — practice + notes in coding practice
-# 1 hour - Review Day 1 commands (muscle memory)
-# 30 mins - Update timings + coding practice on day2 branch → commit → PR → merge
+## Tomorrow's task
+# Continue Linux class notes in new day file (same repo workflow)
+# 30–45 mins revision: pwd, ls -la, find, grep on my own machine
 
 ----------------------------------------
 ----------------------------------------
