@@ -10,4 +10,4 @@ My daily practice log for the May 2026 PathNex batch — timings, class notes, a
 
 ## Day 01
 
-- **24-May-2026** — Linux: terminal basics, paths, `ls`, `cd`, `find`, `grep`, `awk`, `sed`
+- **02-May-2026** — Linux: terminal basics, paths, `ls`, `cd`, `find`, `grep`, `awk`, `sed`
