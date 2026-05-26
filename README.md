@@ -27,7 +27,7 @@ My daily practice log for the May 2026 PathNex batch.
 | 13 | 15-May | K8s Class 2 — pods, labels, troubleshoot | Day13-15-May-2026 |
 | 14 | 16-May | K8s Class 3 — Deployments, Services, rollouts | Day14-16-May-2026 |
 | 15 | 17-May | K8s Class 4 — ConfigMap, Secret, Ingress | Day15-17-May-2026 |
-| 16 | 18-May | K8s Class 5 — probes, affinity, taints, Jobs | Day16-18-May-2026 |
-| 17 | 19-May | K8s Class 6 — Helm, upgrade/rollback, multi-env | Day17-19-May-2026 |
+| 16 | 18-May | K8s Class 5 — probes/affinity + **Helm part 1** (install, repo, chart) | Day16-18-May-2026 |
+| 17 | 19-May | K8s Class 6 — **Helm part 2** (upgrade, rollback, pathnex-chart, multi-env) | Day17-19-May-2026 |
 
 **Note:** Day number increases every session; calendar date skips Sundays (e.g. 14 May).

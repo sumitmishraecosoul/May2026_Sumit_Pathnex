@@ -1,0 +1,13 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2.5 hours - K8s Class 6 Helm part 2 (upgrade, rollback, values files, pathnex-chart)
+# 1 hour - helm upgrade/rollback, values-dev vs values-production, helm lint/package
+# 30 mins - Day17 files + push from EC2 — K8s + Helm complete
+
+## Tomorrow's Task
+# Revision - write kubectl cheat sheet from memory (get, describe, logs, rollout)
+# PathNex next module / mock interview questions on K8s + Helm
+
+----------------------------------------
+----------------------------------------
