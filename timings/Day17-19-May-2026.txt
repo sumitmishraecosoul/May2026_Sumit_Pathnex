@@ -6,8 +6,9 @@
 # 30 mins - Day17 files + push from EC2 — K8s + Helm complete
 
 ## Tomorrow's Task
-# Revision - write kubectl cheat sheet from memory (get, describe, logs, rollout)
-# PathNex next module / mock interview questions on K8s + Helm
+# Day 18 - ArgoCD (GitOps): install, first app, sync/rollback, troubleshooting
+# 45 mins - lab: port-forward argocd UI, create guestbook app
+# 30 mins - write Day18 timings + coding practice, commit (no push)
 
 ----------------------------------------
 ----------------------------------------

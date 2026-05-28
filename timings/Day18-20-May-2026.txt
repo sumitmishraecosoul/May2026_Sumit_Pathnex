@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2 hours - Day 18 (ArgoCD): GitOps basics + ArgoCD architecture (App/Repo/Sync/Health)
+# 1 hour - lab: installed ArgoCD on cluster, port-forward UI, created guestbook app, sync test
+# 30 mins - wrote Day18 timings + coding practice, git add + commit (no push)
+
+## Tomorrow's Task
+# Terraform Class 1 (Day 19): init → plan → apply → destroy + first AWS resource
+# 45 mins - install terraform on EC2/laptop, terraform --version
+# 45 mins - create first terraform project folder and run init/plan
+
+----------------------------------------
+----------------------------------------

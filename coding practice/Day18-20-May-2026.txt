@@ -1,0 +1,173 @@
+ArgoCD — Day 18 (20 May 2026)
+PathNex class notes + what I practiced today
+============================================
+
+Today’s focus was GitOps using ArgoCD on Kubernetes. The main idea we repeated in
+class: Git is the source of truth, and ArgoCD makes sure the cluster matches Git.
+
+
+1) What is GitOps (why companies like it)
+-----------------------------------------
+GitOps means:
+- Desired state (k8s yaml / helm) lives in Git
+- Any change is done via Git commit
+- A controller (ArgoCD) continuously reconciles cluster state to match Git
+
+Why teams prefer it:
+- Easy audit trail (who changed what and when)
+- Rollback is simple (go back to old Git revision / app history)
+- Drift detection (someone changes live cluster manually → Argo shows OutOfSync)
+- Repeatable deployments across dev/uat/prod
+
+
+2) ArgoCD core concepts (what we saw in UI)
+-------------------------------------------
+Application:
+- Defines: repo URL, path, revision, destination cluster + namespace, sync policy
+
+Sync status:
+- Synced / OutOfSync / Unknown
+
+Health status:
+- Healthy / Progressing / Degraded / Missing
+
+Sync:
+- Manual sync = I click/CLI to apply latest Git desired state
+- Auto sync = Argo auto-applies when Git changes
+
+Self-heal:
+- If someone changes a resource manually, Argo brings it back to Git state
+
+Prune:
+- If a resource is removed from Git, Argo deletes it from cluster
+
+
+3) ArgoCD architecture (high level)
+-----------------------------------
+- API server: UI/CLI/API entry
+- Repo server: clones Git repos and renders manifests
+- Application controller: compares desired vs live and syncs
+- Dex (optional): SSO/auth
+
+
+4) Install ArgoCD (what I ran in lab)
+-------------------------------------
+kubectl create namespace argocd
+
+# Using stable install manifest (class did this way)
+kubectl apply -n argocd --server-side --force-conflicts -f `
+  https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+kubectl get pods -n argocd
+kubectl get svc -n argocd
+
+
+5) Access UI + get admin password
+---------------------------------
+# UI access
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+# Then open: https://localhost:8080
+
+# Initial admin password (decode secret)
+kubectl -n argocd get secret argocd-initial-admin-secret `
+  -o jsonpath="{.data.password}" | base64 -d; echo
+
+Username: admin
+
+
+6) Install argocd CLI (lab)
+---------------------------
+curl -sSL -o argocd-linux-amd64 `
+  https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+rm argocd-linux-amd64
+
+argocd version --client
+
+
+7) Create first app (guestbook) using Application yaml
+------------------------------------------------------
+guestbook-app.yaml:
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+
+Apply:
+kubectl apply -f guestbook-app.yaml
+
+Check:
+kubectl get applications -n argocd
+kubectl get pods -n default
+
+
+8) ArgoCD CLI basics (what I practiced)
+---------------------------------------
+# login (after port-forward)
+argocd login localhost:8080
+
+argocd app list
+argocd app get guestbook
+
+# manual sync
+argocd app sync guestbook
+
+# wait until healthy
+argocd app wait guestbook --health
+
+# history + rollback
+argocd app history guestbook
+argocd app rollback guestbook 1
+
+# delete app (cleanup)
+argocd app delete guestbook
+
+
+9) Practical troubleshooting checklist (job style)
+--------------------------------------------------
+When app shows OutOfSync:
+- Check what drifted: Argo UI diff or argocd app get
+- If change was manual and wrong → sync to restore Git state
+- If change is required → commit to Git and let Argo sync
+
+When app is Degraded:
+- kubectl get pods -n <ns>
+- kubectl describe pod <pod>
+- kubectl logs <pod>
+- check service selectors/ports and deployment readiness probes
+
+Common gotcha from class:
+- If auto-sync is ON, rollback may be blocked/overridden; disable auto-sync before rollback.
+
+
+10) Mini hands-on tasks I did today
+-----------------------------------
+- Installed ArgoCD, logged in to UI
+- Deployed guestbook from example repo
+- Changed a value in Git (replica count) and confirmed Argo detected OutOfSync
+- Deleted a pod and watched it come back (self-heal via Deployment)
+
+
+Push from EC2 (same daily steps from Day 7)
+-------------------------------------------
+git checkout main && git pull origin main
+git checkout -b Day18-20-May-2026
+git add timings/Day18-20-May-2026.txt "coding practice/Day18-20-May-2026.txt"
+git commit -m "Added Day18 ArgoCD notes (20 May 2026)"
+# git push -u origin Day18-20-May-2026   (I will do this manually when needed)
+
