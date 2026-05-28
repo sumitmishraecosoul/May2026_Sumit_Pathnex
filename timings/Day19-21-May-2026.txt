@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2 hours - Terraform Class 1: IaC basics, providers/resources/state, workflow (init/plan/apply/destroy)
+# 1 hour - hands-on: wrote first AWS provider + EC2 example, validate/fmt, understanding variables/outputs
+# 30 mins - notes + file updates, git add + commit (no push)
+
+## Tomorrow's Task
+# Terraform Class 2 (Day 20): real lifecycle workflow, state show vs show, import, drift handling, remote backend
+# 45 mins - read plan/apply output carefully and understand +/~/- actions
+# 45 mins - practice: import a resource to state + use terraform state show + clean .tf
+
+----------------------------------------
+----------------------------------------
