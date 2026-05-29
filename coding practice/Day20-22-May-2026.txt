@@ -1,0 +1,165 @@
+Terraform — Day 20 (22 May 2026)
+PathNex class notes + what I practiced today
+============================================
+
+Today was more “real DevOps workflow” Terraform. We focused on reading plan/apply
+properly, state commands, remote backend, import, and drift handling.
+
+
+1) Terraform plan/apply: how to read it
+---------------------------------------
+Plan output symbols:
+- + create
+- ~ update in-place
+- - destroy
+
+Example (class style):
+- 1 to add, 2 to change, 1 to destroy
+
+My understanding:
+- `plan` is the preview
+- `apply` actually performs it (needs confirmation: `yes`)
+
+
+2) terraform show vs terraform state show
+-----------------------------------------
+terraform show
+- Shows the whole current state (or a specific plan/state file) in human-readable form
+
+terraform show terraform.tfstate
+- Explicitly shows that state file
+
+terraform state show <resource>
+- Shows one resource in detail from the state file
+
+Example:
+terraform state show aws_instance.pathnex_application_server
+
+
+3) Remote backend (S3 example)
+------------------------------
+Why remote backend:
+- Team collaboration
+- Single source of state
+- Avoid overwrites (with locking)
+
+backend.tf example:
+terraform {
+  backend "s3" {
+    bucket = "my-terraform-state-bucket"
+    key    = "state/terraform.tfstate"
+    region = "us-west-2"
+  }
+}
+
+Then:
+terraform init
+
+
+4) Import workflow (existing resources → terraform code)
+--------------------------------------------------------
+Goal: bring an existing AWS resource under Terraform management.
+
+Step 1: create minimal placeholder resource in .tf
+resource "aws_instance" "web" {
+  ami           = "ami-placeholder"
+  instance_type = "t3.micro"
+}
+
+Step 2: import real resource into state
+terraform import aws_instance.web i-0123456789abcdef0
+
+Step 3: inspect imported details
+terraform state show aws_instance.web
+
+Important rule (class warning):
+- Don’t copy everything from `state show` into your .tf
+- Many attributes are computed/read-only (id, arn, public_ip, etc.)
+
+Step 4: copy only manageable attributes to .tf (examples)
+- ami
+- instance_type
+- key_name
+- subnet_id
+- vpc_security_group_ids
+- tags
+- root_block_device (only configurable fields like volume_size/type)
+
+Step 5: plan/apply to confirm no unexpected changes
+terraform plan
+terraform apply
+
+
+5) Resolving drift (very common in jobs)
+----------------------------------------
+Drift = manual changes in cloud that don’t match terraform config.
+
+Step 1: detect drift
+terraform plan
+
+Example diff:
+~ aws_instance.web
+  instance_type: "t2.micro" => "t3.micro"
+
+Step 2: decide what to do
+Option A: accept drift (update .tf to match cloud)
+- If cloud change was intended, update config and apply
+
+Option B: revert drift (enforce terraform config)
+- If cloud change is unwanted, run apply so terraform restores desired state
+
+Step 3: prevent future drift
+- Make changes only via terraform
+- Use remote backend + locking
+- Track important attributes in code
+
+
+6) Lifecycle block (C-P-I-R trick)
+----------------------------------
+Lifecycle controls create/update/destroy behavior (inside a resource block).
+
+C → create_before_destroy
+- Create new first, delete old later (zero downtime)
+
+P → prevent_destroy
+- Protect critical resources (terraform destroy will error)
+
+I → ignore_changes
+- Ignore changes to specific attributes (like tags)
+- Risk: can hide drift if overused
+
+R → replace_triggered_by
+- Force replacement when dependency changes (ex: AMI change)
+
+
+7) Commands I want to practice more
+-----------------------------------
+terraform init
+terraform plan
+terraform apply
+terraform show
+terraform state list
+terraform state show <resource>
+terraform import <addr> <id>
+terraform fmt
+terraform validate
+
+
+8) Quick job-ready checklist (my notes)
+---------------------------------------
+- Always run plan before apply
+- Use remote backend for team projects
+- Keep secrets out of repo
+- Know import workflow (minimal resource → import → state show → clean .tf)
+- Know drift options (accept vs revert)
+- Know lifecycle use cases and risks
+
+
+Push from EC2 (same daily steps from Day 7)
+-------------------------------------------
+git checkout main && git pull origin main
+git checkout -b Day20-22-May-2026
+git add timings/Day20-22-May-2026.txt "coding practice/Day20-22-May-2026.txt"
+git commit -m "Added Day20 Terraform notes (22 May 2026)"
+# git push -u origin Day20-22-May-2026   (I will do this manually when needed)
+

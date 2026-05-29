@@ -1,0 +1,14 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2 hours - Terraform Class 2: full lifecycle in real projects (plan/apply output, show/state show)
+# 1 hour - remote backend + state locking idea, import workflow basics, resolving drift
+# 30 mins - wrote Day20 notes + committed (no push)
+
+## Tomorrow's Task
+# Revision: make a small Terraform repo (S3 + EC2 + SG) with variables and outputs
+# 30 mins - practice terraform import + clean resource blocks
+# 30 mins - interview questions + common mistakes list
+
+----------------------------------------
+----------------------------------------

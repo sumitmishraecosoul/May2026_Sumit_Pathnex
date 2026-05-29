@@ -29,5 +29,7 @@ My daily practice log for the May 2026 PathNex batch.
 | 15 | 17-May | K8s Class 4 — ConfigMap, Secret, Ingress | Day15-17-May-2026 |
 | 16 | 18-May | K8s Class 5 — probes/affinity + **Helm part 1** (install, repo, chart) | Day16-18-May-2026 |
 | 17 | 19-May | K8s Class 6 — **Helm part 2** (upgrade, rollback, pathnex-chart, multi-env) | Day17-19-May-2026 |
+| 18 | 20-May | ArgoCD — GitOps (install, app, sync, rollback, drift/self-heal) | Day18-20-May-2026 |
+| 19 | 21-May | Terraform Class 1 — intro, providers/resources/state, init→plan→apply→destroy | Day19-21-May-2026 |
+| 20 | 22-May | Terraform Class 2 — state/show, remote backend, import, drift, lifecycle | Day20-22-May-2026 |
 
-**Note:** Day number increases every session; calendar date skips Sundays (e.g. 14 May).
