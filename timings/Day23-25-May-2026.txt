@@ -1,0 +1,15 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 3 hours - Monitoring Class: Datadog, Prometheus, Grafana, production workflow
+# 1 hour - Datadog agent install lab + metric types + dashboard/monitor basics
+# 30 mins - Day23 files + commit (no push)
+
+## Tomorrow's Task
+# Day 24 - ELK Stack: Elasticsearch, Logstash, Kibana + K8s/Terraform/Ansible logging
+# 45 mins - centralised logging flow sketch (app → logstash → ES → Kibana)
+# 45 mins - Kibana dashboard + log search queries
+# 30 mins - write Day24 timings + coding practice, commit (no push)
+
+----------------------------------------
+----------------------------------------

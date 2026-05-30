@@ -1,0 +1,377 @@
+Monitoring — Day 23 (25 May 2026)
+PathNex class notes + what I practiced today
+=============================================
+
+Session goal: real MNC monitoring stack — Datadog, Prometheus, Grafana, alerts,
+production workflow, interview prep. Metrics + dashboards + failure detection.
+
+
+═══════════════════════════════════════
+PART A — WHY MONITORING (job context)
+═══════════════════════════════════════
+
+Most beginners skip monitoring; companies hire for K8s + Prometheus + Grafana + Datadog.
+
+Production teams use monitoring to:
+- Watch server/app health (CPU, memory, latency, errors)
+- Set alerts before users notice outages
+- Trace failures (logs + metrics + traces)
+- Meet SLOs and reduce MTTR (mean time to repair)
+
+Three pillars (interview term):
+| Pillar   | Tool examples        | Answers                          |
+|----------|----------------------|----------------------------------|
+| Metrics  | Prometheus, Datadog  | How fast? How much? How many?    |
+| Logs     | ELK, Datadog Logs    | What happened? (Day 24 — ELK)    |
+| Traces   | Datadog APM, Jaeger  | Which service slowed the request?|
+
+
+═══════════════════════════════════════
+PART B — DATADOG (real companies)
+═══════════════════════════════════════
+
+1) What is Datadog?
+-------------------
+Cloud-based monitoring and analytics for IT ops and dev teams.
+Tracks health and performance of:
+- Applications
+- Infrastructure (VMs, K8s, cloud)
+- Logs
+- Traces (APM)
+
+SaaS model: install agent → data goes to Datadog cloud → dashboards + alerts.
+
+
+2) Installing the Datadog Agent
+---------------------------------
+Prerequisites:
+- Datadog account: https://www.datadoghq.com
+- Access to target system (Linux / Windows / macOS)
+- API Key from Datadog dashboard
+
+Linux (Debian/Ubuntu):
+DD_API_KEY=<YOUR_DATADOG_API_KEY> bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)"
+
+macOS (Homebrew):
+brew install --cask datadog-agent
+sudo vi /opt/datadog-agent/etc/datadog.yaml   # add API key
+
+Windows:
+1. Download installer from Datadog dashboard
+2. Run installer and enter API key
+
+Verify agent:
+sudo datadog-agent status
+
+
+3) Types of metrics in Datadog
+------------------------------
+| Type         | Description                              | Examples              |
+|--------------|------------------------------------------|-----------------------|
+| Gauge        | Single value at a point in time          | CPU %, memory usage   |
+| Count        | Number of times an event occurred        | Total requests        |
+| Rate         | Count per second (throughput)            | Requests/sec          |
+| Histogram    | Statistical distribution of values       | Request latency       |
+| Distribution | Histogram aggregated across hosts        | Global latency stats  |
+
+Tip: always use tags — env:prod, region:us-east, service:web, team:backend
+
+
+4) Key Datadog components
+-------------------------
+Dashboards:
+- Graphs, heatmaps, tables for metrics and logs
+
+Monitors (alerts):
+- Metric alert
+- Anomaly detection
+- Forecast alerts
+- Composite alerts (multiple conditions)
+
+Integrations:
+- Pre-built for AWS, Azure, GCP, Kubernetes, Docker, etc.
+
+Tags:
+- Filter, group, search — service:web, env:prod, team:backend
+
+
+5) Logs, traces, and APM
+------------------------
+Logs:
+- Configure agent: /etc/datadog-agent/conf.d/<service>.d/conf.yaml
+- Parse and search logs in real time in Datadog UI
+
+Traces (APM):
+- Trace HTTP requests, DB queries across services
+- Python example:
+  pip install ddtrace
+
+  from ddtrace import tracer
+  @tracer.wrap()
+  def process_data():
+      # your logic
+
+
+6) Hands-on activities (class lab checklist)
+--------------------------------------------
+[ ] Activity 1: Install Datadog agent on a VM (Linux or macOS)
+[ ] Activity 2: Monitor CPU, memory, disk usage
+[ ] Activity 3: Custom metric via DogStatsD
+[ ] Activity 4: Create dashboard for key metrics
+[ ] Activity 5: Alert for high CPU usage
+
+
+7) Custom metrics — DogStatsD
+-------------------------------
+DogStatsD = metrics aggregation daemon (UDP, low overhead).
+
+Python example:
+from datadog import initialize, statsd
+
+options = {'api_key': 'YOUR_API_KEY', 'app_key': 'YOUR_APP_KEY'}
+initialize(**options)
+statsd.gauge('pathnex.cpu', 75, tags=["env:dev", "app:pathnex"])
+
+
+8) Monitoring Kubernetes with Datadog
+-------------------------------------
+Prerequisites: K8s cluster, kubectl, Helm (recommended)
+
+helm repo add datadog https://helm.datadoghq.com
+helm repo update
+helm install datadog-agent datadog/datadog \
+  --set datadog.apiKey=<YOUR_DATADOG_API_KEY> \
+  --set datadog.site='datadoghq.com' \
+  --set targetSystem=linux
+
+Key features:
+- Autodiscovery of K8s services
+- Container metrics (CPU, memory, restarts)
+- Cluster health, live container view
+- Kubelet and control plane monitoring
+- DaemonSet = agent on every node
+
+Best practices:
+- Tag by env, team, app
+- Use Kubernetes integration dashboard
+- Monitor pod restarts, OOM kills, node NotReady
+- Alerts for failed deployments and crash loops
+
+
+9) Monitoring Apache Kafka with Datadog
+---------------------------------------
+Prerequisites: Datadog agent on Kafka host, JMX enabled
+
+Steps:
+1. Enable JMX in Kafka (KAFKA_JMX_OPTS)
+2. Create /etc/datadog-agent/conf.d/kafka.d/conf.yaml:
+
+init_config:
+is_jmx: true
+instances:
+  - host: localhost
+    port: 9999
+    name: kafka-local
+    tags:
+      - env:dev
+      - service:kafka
+
+3. Restart agent:
+sudo service datadog-agent restart
+
+Metrics: broker throughput, consumer lag, producer rates, under-replicated partitions
+Alerts: high consumer lag, under-replicated partitions
+
+
+10) Datadog best practices
+---------------------------
+- Tag everything (env, region, service, team)
+- Team-specific dashboards for ownership
+- Anomaly detection for smarter alerts
+- RBAC for secure access
+- Integrate Slack, PagerDuty, email for on-call
+
+
+11) Datadog summary table
+-------------------------
+| Topic          | Key takeaway                              |
+|----------------|-------------------------------------------|
+| Installation   | Script or Helm on K8s                     |
+| Kubernetes     | Helm + DaemonSet per node                 |
+| Kafka          | JMX integration via agent                 |
+| Metric types   | Gauge, Count, Rate, Histogram, Distribution|
+| Dashboards     | CPU, memory, logs, APM graphs             |
+| Monitors       | Performance + anomaly alerts              |
+| APM            | Cross-service request tracing             |
+| Custom metrics | DogStatsD or client libraries             |
+| Integrations   | AWS, Docker, K8s plug-and-play            |
+
+
+═══════════════════════════════════════
+PART C — PROMETHEUS (metrics + alerting)
+═══════════════════════════════════════
+
+12) What is Prometheus?
+-----------------------
+Open-source metrics monitoring (CNCF). Pull-based: Prometheus scrapes targets on interval.
+Common in K8s (kube-prometheus-stack, Prometheus Operator).
+
+Core concepts:
+- Exporter — exposes /metrics (node_exporter, kube-state-metrics)
+- Scrape — Prometheus pulls metrics every N seconds
+- PromQL — query language for metrics
+- Alertmanager — routes alerts to Slack/PagerDuty
+
+
+13) Prometheus architecture (simple)
+------------------------------------
+[App/Exporter] --scrape--> [Prometheus TSDB] --query--> [Grafana]
+                                |
+                                v
+                         [Alertmanager] --> Slack / email
+
+
+14) Basic prometheus.yml
+------------------------
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+
+
+15) PromQL examples (interview)
+-------------------------------
+CPU usage (node):
+100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+Request rate:
+rate(http_requests_total[5m])
+
+Error rate:
+rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])
+
+Memory:
+node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+
+
+16) Alerting rules (alert.rules.yml sketch)
+-------------------------------------------
+groups:
+  - name: pathnex-alerts
+    rules:
+      - alert: HighCPU
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU on {{ $labels.instance }}"
+
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+
+
+17) Install on K8s (Helm — common in jobs)
+------------------------------------------
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install prometheus prometheus-community/kube-prometheus-stack
+
+
+═══════════════════════════════════════
+PART D — GRAFANA (dashboards from scratch)
+═══════════════════════════════════════
+
+18) What is Grafana?
+--------------------
+Open-source visualization. Connects to Prometheus, Datadog, Elasticsearch, etc.
+Build dashboards: graphs, gauges, tables, heatmaps.
+
+
+19) First dashboard steps
+-------------------------
+1. Add data source (Prometheus URL: http://prometheus:9090)
+2. Create dashboard → Add panel
+3. Write PromQL query or use metric browser
+4. Set unit (percent, bytes, req/s)
+5. Save dashboard + folder (team/env)
+
+
+20) Useful panels for DevOps
+----------------------------
+- Node CPU / memory / disk (node_exporter)
+- Pod restarts (kube-state-metrics)
+- HTTP latency p95 (histogram)
+- Error rate 5xx
+- Deployment replica count vs desired
+
+
+21) Grafana + Prometheus workflow (production)
+----------------------------------------------
+Deploy app → exporter exposes metrics → Prometheus scrapes
+→ Grafana dashboards for SRE team → Alertmanager on thresholds
+→ On-call gets Slack page → check logs (ELK Day 24) → fix + postmortem
+
+
+═══════════════════════════════════════
+PART E — PRODUCTION MONITORING WORKFLOW
+═══════════════════════════════════════
+
+22) Golden signals (Google SRE)
+-------------------------------
+- Latency — how long requests take
+- Traffic — demand on the system
+- Errors — rate of failed requests
+- Saturation — how full the resource is (CPU, queue depth)
+
+
+23) Typical on-call flow
+------------------------
+1. Alert fires (Datadog monitor or Prometheus → Alertmanager)
+2. Check dashboard — which metric breached?
+3. Correlate with deploy time / K8s events
+4. Check logs (Kibana / Datadog Logs)
+5. Mitigate (rollback, scale, restart)
+6. Document incident + tune alert threshold
+
+
+24) Interview questions (MNC-style)
+-----------------------------------
+- Difference between metrics, logs, and traces?
+- Push vs pull monitoring? (Datadog agent push vs Prometheus pull)
+- What is PromQL? Example alert for high memory?
+- How do you monitor Kubernetes pods?
+- What is RED method? (Rate, Errors, Duration — services)
+- What is USE method? (Utilization, Saturation, Errors — resources)
+- How would you reduce alert fatigue?
+- Datadog vs Prometheus + Grafana — when use which?
+  - Datadog: fast SaaS, full stack, enterprise support
+  - Prom+Graf: open source, K8s-native, self-hosted, no per-host SaaS cost
+
+
+25) Job-ready checklist (Day 23)
+--------------------------------
+[ ] Installed or understood Datadog agent + API key flow
+[ ] Know 5 metric types + tagging
+[ ] Can explain Prometheus scrape + PromQL basics
+[ ] Can sketch Grafana dashboard for CPU + pod restarts
+[ ] Know K8s monitoring via Helm (Datadog or kube-prometheus-stack)
+[ ] Can describe alert → triage → logs workflow
+
+
+Push from EC2 (same daily steps from Day 7)
+-------------------------------------------
+git checkout main && git pull origin main
+git checkout -b Day23-25-May-2026
+git add timings/Day23-25-May-2026.txt "coding practice/Day23-25-May-2026.txt"
+git commit -m "Added Day23 Monitoring notes (25 May 2026)"
+# git push -u origin Day23-25-May-2026   (I will do this manually when needed)
