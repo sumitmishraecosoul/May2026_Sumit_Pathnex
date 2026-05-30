@@ -1,0 +1,312 @@
+Kafka — Day 25 (27 May 2026)
+PathNex class notes + what I practiced today
+=============================================
+
+Session goal: Kafka in real DevOps/data environments — fundamentals, AWS MSK,
+Confluent, event streaming, monitoring, scaling, interview prep.
+
+
+═══════════════════════════════════════
+PART A — KAFKA FUNDAMENTALS
+═══════════════════════════════════════
+
+1) What is Apache Kafka?
+------------------------
+Distributed streaming platform for high-throughput, fault-tolerant, real-time data feeds.
+
+Used for:
+- Real-time data pipelines
+- Streaming applications
+- Event-driven architectures
+- Log aggregation
+
+Think of it as: durable commit log + messaging system — data stored in scalable,
+fault-tolerant way.
+
+Modern metadata: KRaft (Kafka Raft) since 2.8 — replaces Zookeeper in new deployments.
+
+
+2) Key architecture components
+------------------------------
+
+Producer
+- Sends records (messages) to Kafka topics
+- Messages go to topic partitions
+- Partition choice: by key (same key → same partition) or round-robin
+- Reliability: acks setting (0, 1, all) controls durability
+
+Consumer
+- Reads data from topics
+- Consumer group = parallel processing + fault tolerance
+- Each partition consumed by only ONE consumer in the group
+- Tracks progress via offsets (pointer to next message)
+
+Broker
+- Server that stores data and serves clients
+- Cluster = one or more brokers (horizontal scale)
+- Manages partitions, replication, producer/consumer requests
+
+Topic
+- Category/stream where records are published
+- Logical construct — can hold millions of messages
+- Producers write; consumers read
+
+Partition
+- Subset of a topic — ordered, immutable sequence of messages
+- Ordering guaranteed WITHIN a partition, NOT across partitions
+- Enables parallelism and horizontal scale across brokers
+
+Zookeeper (legacy)
+- Old Kafka: cluster metadata, leader election
+- Deprecated path: KRaft mode (internal Raft consensus, no ZK)
+
+Kafka Connect
+- Integrate Kafka with external systems (DB, S3, Elasticsearch)
+- Source connectors → into Kafka topics
+- Sink connectors → from Kafka topics to external systems
+- Scalable, fault-tolerant data movement
+
+Kafka Streams
+- Library for real-time stream processing on Kafka topics
+- Windowing, aggregations, joins, stateful transforms
+- Scales with Kafka cluster
+
+
+3) Kafka data flow (step by step)
+---------------------------------
+1. Producer → Broker: message written to a topic partition
+2. Broker → Brokers: partition replicated for fault tolerance
+3. Consumer → Broker: consumer reads from assigned partitions
+4. Offset tracking: consumer commits offset after processing (at-least-once / exactly-once configs)
+
+
+4) Guarantees and features (interview)
+--------------------------------------
+| Feature          | Detail                                           |
+|------------------|--------------------------------------------------|
+| Durability       | Persisted to disk + replicated across brokers    |
+| Scalability      | Add brokers + partitions horizontally            |
+| High throughput  | Millions of msgs/sec at scale                    |
+| Fault tolerance  | Broker fails → replica leader takes over         |
+| Message ordering | Per partition only                               |
+
+Producer acks (reliability):
+- acks=0  — fire and forget (fastest, risky)
+- acks=1  — leader ack (balanced)
+- acks=all — all in-sync replicas ack (safest)
+
+
+5) Consumer groups (must understand)
+------------------------------------
+Topic "orders" with 6 partitions, consumer group "billing":
+- 6 consumers → each gets 1 partition (max parallelism = partition count)
+- 3 consumers → each gets 2 partitions
+- 7 consumers → 1 consumer idle (no partition left)
+
+Consumer lag = how far behind consumer is from latest offset (critical metric).
+
+
+═══════════════════════════════════════
+PART B — KAFKA IN REAL PROJECTS
+═══════════════════════════════════════
+
+6) DevOps use cases
+-------------------
+| Use case              | How Kafka fits                              |
+|-----------------------|---------------------------------------------|
+| Log aggregation       | App logs → Kafka → ELK/S3 (Day 24)          |
+| Event-driven microservices | Order placed → payment, inventory, email |
+| Metrics pipeline      | Metrics events → stream processing → store  |
+| CDC (Change Data Capture)| DB changes → Kafka → analytics warehouse   |
+| Decouple services     | Producer doesn't wait for slow consumers    |
+
+Event sourcing:
+- Every state change = event on topic
+- Multiple consumers process independently (audit, analytics, notifications)
+
+
+7) Kafka architecture in production (mental model)
+--------------------------------------------------
+                    ┌─────────────┐
+  Producers ───────►│   Brokers   │◄────── Consumers (groups)
+  (apps, agents)    │  (cluster)  │        (apps, stream processors)
+                    └──────┬──────┘
+                           │ replication
+                    ┌──────▼──────┐
+                    │  Connect /  │
+                    │   Streams   │
+                    └─────────────┘
+
+Ops concerns:
+- Partition count planning (hard to reduce later)
+- Replication factor (usually 3 in prod)
+- Retention (time or size — e.g. 7 days)
+- ACLs / SASL / SSL for security
+
+
+═══════════════════════════════════════
+PART C — AWS MSK (MANAGED STREAMING FOR KAFKA)
+═══════════════════════════════════════
+
+8) What is AWS MSK?
+-------------------
+Fully managed Apache Kafka on AWS — AWS runs brokers, patching, monitoring hooks.
+
+Why companies use MSK:
+- No broker OS patching yourself
+- Integrates with VPC, IAM, CloudWatch, KMS
+- MSK Connect for managed Kafka Connect
+- Scales by broker size or add brokers
+
+Key MSK concepts:
+- MSK cluster in VPC private subnets
+- Client apps in same VPC (or peered) connect to bootstrap brokers
+- Security: TLS in transit, IAM auth optional, SASL/SCRAM
+- Storage on EBS per broker
+
+MSK vs self-hosted Kafka on EC2:
+| MSK                    | Self-hosted EC2           |
+|------------------------|---------------------------|
+| Managed patches/ops    | You manage everything     |
+| AWS billing            | Cheaper at huge scale maybe|
+| CloudWatch metrics     | Bring Prometheus/Datadog  |
+| VPC-native             | Full control              |
+
+
+9) MSK workflow (DevOps view)
+-----------------------------
+1. Terraform / console: create MSK cluster (Day 19–20 tie-in)
+2. Create topics (kafka-topics.sh or MSK API)
+3. Producers/consumers in EKS/EC2/Lambda connect to bootstrap servers
+4. Monitor: CloudWatch + Datadog Kafka integration (Day 23)
+5. Alerts: consumer lag, under-replicated partitions, offline partitions
+
+
+10) MSK hands-on commands (conceptual)
+--------------------------------------
+# List topics (from client box with Kafka tools)
+kafka-topics.sh --bootstrap-server <broker:9092> --list
+
+kafka-topics.sh --create --topic pathnex-events \
+  --bootstrap-server <broker:9092> \
+  --partitions 6 --replication-factor 3
+
+# Describe consumer group lag
+kafka-consumer-groups.sh --bootstrap-server <broker:9092> \
+  --describe --group billing-service
+
+
+═══════════════════════════════════════
+PART D — CONFLUENT PLATFORM
+═══════════════════════════════════════
+
+11) What is Confluent?
+----------------------
+Company founded by Kafka creators. Offers:
+- Confluent Platform — enterprise Kafka distribution (on-prem / cloud)
+- Confluent Cloud — fully managed Kafka (like MSK competitor)
+- Schema Registry — enforce Avro/JSON/Protobuf schemas
+- ksqlDB — SQL on streams
+- Connectors marketplace
+
+Confluent vs raw Apache Kafka:
+| Confluent extra          | Benefit                          |
+|--------------------------|----------------------------------|
+| Schema Registry          | Prevent breaking schema changes  |
+| ksqlDB                   | Stream queries without custom code|
+| Control Center           | UI for clusters, lag, topics     |
+| Replicator               | Cross-cluster / cloud migration  |
+| Enterprise support       | Production SLAs                  |
+
+
+12) When MSK vs Confluent Cloud?
+--------------------------------
+- Already all-in AWS → MSK fits naturally
+- Multi-cloud or Confluent ecosystem → Confluent Cloud
+- Need Schema Registry + ksqlDB managed → Confluent
+- Interview answer: both are managed Kafka; choice = cloud strategy + features + cost
+
+
+═══════════════════════════════════════
+PART E — MONITORING, SCALING, RELIABILITY
+═══════════════════════════════════════
+
+13) Metrics to monitor (Day 23 connection)
+----------------------------------------
+- Consumer lag (most important)
+- Under-replicated partitions
+- Offline partitions
+- Request rate / bytes in/out
+- Broker CPU, disk usage
+- ISR (in-sync replicas) shrink events
+
+Datadog Kafka (Day 23): JMX integration on brokers — lag, throughput, error rates.
+
+
+14) Scaling Kafka
+-----------------
+Scale producers: more app instances (partition key matters)
+Scale brokers: add brokers + rebalance partitions
+Scale consumers: add consumers up to partition count
+Scale throughput: increase partitions (plan ahead — hard to shrink)
+
+
+15) Reliability patterns
+------------------------
+- replication.factor=3, min.insync.replicas=2
+- Producer acks=all for critical data
+- Idempotent producer (avoid duplicates)
+- Dead letter topic for poison messages
+- Multi-AZ broker placement (MSK does this in AWS)
+
+
+═══════════════════════════════════════
+PART F — INTERVIEW & JOB-READY
+═══════════════════════════════════════
+
+16) Top interview questions
+---------------------------
+- What is Kafka? Producer, consumer, broker, topic, partition?
+- Difference between topic and partition?
+- What is consumer group? What happens with more consumers than partitions?
+- What is consumer lag?
+- Ordering guarantee in Kafka?
+- What is KRaft vs Zookeeper?
+- acks=0 vs 1 vs all?
+- At-least-once vs exactly-once delivery?
+- Kafka vs RabbitMQ / SQS? (Kafka = log, replay, high throughput; queues = task dispatch)
+- What is MSK? Why managed Kafka?
+- What does Confluent Schema Registry do?
+- How monitor Kafka in production?
+
+Reference: https://chatgpt.com/share/68addaaf-5470-8013-af6c-0185d953c969
+
+
+17) PathNex stack connection
+----------------------------
+| Day   | Link to Kafka                          |
+|-------|----------------------------------------|
+| 09    | AWS streaming / data pipelines         |
+| 23    | Datadog Kafka JMX monitoring           |
+| 24    | Kafka → ELK log pipeline               |
+| 19–20 | Terraform provision MSK cluster          |
+| 21–22 | Ansible configure producers/consumers    |
+
+
+18) Job-ready checklist (Day 25)
+--------------------------------
+[ ] Can draw producer → topic/partition → consumer group diagram
+[ ] Explain consumer lag and why it matters
+[ ] Know MSK vs self-hosted vs Confluent Cloud (one line each)
+[ ] Know replication factor + min.insync.replicas
+[ ] List 3 DevOps use cases (logs, events, decoupling)
+[ ] Name 4 metrics to alert on
+
+
+Push from EC2 (same daily steps from Day 7)
+-------------------------------------------
+git checkout main && git pull origin main
+git checkout -b Day25-27-May-2026
+git add timings/Day25-27-May-2026.txt "coding practice/Day25-27-May-2026.txt"
+git commit -m "Added Day25 Kafka MSK Confluent notes (27 May 2026)"
+# git push -u origin Day25-27-May-2026   (I will do this manually when needed)

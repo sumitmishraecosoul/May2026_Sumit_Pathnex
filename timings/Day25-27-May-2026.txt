@@ -1,0 +1,16 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 3 hours - Kafka Class: fundamentals, MSK, Confluent, DevOps use cases
+# 1 hour - producer/consumer/partition concepts + architecture diagram
+# 30 mins - MSK vs self-hosted Kafka + monitoring tie-in (Day 23 Datadog Kafka)
+# 30 mins - Day25 files + commit (no push)
+
+## Tomorrow's Task
+# Day 26 - SSL/TLS certificates + SRE roadmap (SLI/SLO, on-call, interview prep)
+# 45 mins - HTTPS setup sketch (cert on load balancer vs ingress)
+# 45 mins - SRE vs DevOps notes + error budget example
+# 30 mins - write Day26 timings + coding practice, commit (no push)
+
+----------------------------------------
+----------------------------------------
