@@ -1,0 +1,16 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 2 hours - SSL/TLS session: certs, HTTPS, production setup, common mistakes
+# 2 hours - SRE roadmap: vs DevOps, SLI/SLO, on-call, observability, interview plan
+# 30 mins - mapped SRE skills to PathNex days (Linux→K8s→monitoring)
+# 30 mins - Day26 files + commit (no push)
+
+## Tomorrow's Task
+# Revision: full PathNex stack recap (Day 01–26) + resume project bullets
+# 45 mins - practice explaining SLI/SLO with one example service
+# 45 mins - SSL on Ingress vs ALB diagram + cert renewal flow
+# 30 mins - push branch when ready
+
+----------------------------------------
+----------------------------------------
