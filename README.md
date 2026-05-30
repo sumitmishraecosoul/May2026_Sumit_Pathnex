@@ -32,4 +32,6 @@ My daily practice log for the May 2026 PathNex batch.
 | 18 | 20-May | ArgoCD — GitOps (install, app, sync, rollback, drift/self-heal) | Day18-20-May-2026 |
 | 19 | 21-May | Terraform Class 1 — intro, providers/resources/state, init→plan→apply→destroy | Day19-21-May-2026 |
 | 20 | 22-May | Terraform Class 2 — state/show, remote backend, import, drift, lifecycle | Day20-22-May-2026 |
+| 21 | 23-May | Ansible Part 1 — setup, inventory, ad-hoc, playbooks, modules, output | Day21-23-May-2026 |
+| 22 | 24-May | Ansible Part 2 + CI/CD — vars/roles/idempotency, Jenkins vs GitLab | Day22-24-May-2026 |
 

@@ -1,0 +1,15 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 3 hours - Ansible Class (Part 1): what/why, setup, inventory, SSH, ad-hoc, playbook basics
+# 1 hour - venv pathnex + ansible --version, simple inventory, ping + first playbook
+# 30 mins - Day21 files + commit (no push)
+
+## Tomorrow's Task
+# Day 22 - Ansible Part 2 (vars, facts, Jinja2, roles, idempotency) + CI/CD session
+# 45 mins - finish handlers/roles lab + read playbook output (--check, -v)
+# 45 mins - CI/CD: Jenkins vs GitLab comparison notes + pipeline sketch
+# 30 mins - write Day22 timings + coding practice, commit (no push)
+
+----------------------------------------
+----------------------------------------

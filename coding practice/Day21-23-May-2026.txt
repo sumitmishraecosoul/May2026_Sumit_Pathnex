@@ -1,0 +1,268 @@
+Ansible — Day 21 (23 May 2026) — Part 1 of 2
+PathNex class notes + what I practiced today
+=============================================
+
+Session goal: become Ansible job-ready — setup, inventory, SSH, ad-hoc commands,
+playbook basics (tasks, modules, handlers intro). Real playbooks, project-style.
+
+
+1) What is Ansible?
+-------------------
+- Open-source automation for configuration management, app deployment, task automation.
+- Automates repetitive work: install software, configure servers, manage many machines.
+- Works on-prem, cloud, or hybrid.
+
+Key idea:
+- Automate configuration and software deployment across many servers in a repeatable,
+  consistent way.
+- Agentless: no special agent on targets. Uses SSH (Linux/Unix) or WinRM (Windows).
+
+
+2) Why companies use Ansible
+----------------------------
+- Simplifies complex tasks (web server setup, updates, deploys).
+- Consistency — same config everywhere, fewer human errors.
+- Scales from one host to thousands with the same playbooks.
+- No agent on targets — only SSH/WinRM, easier to adopt.
+
+
+3) Core components (job interview terms)
+----------------------------------------
+Control node:
+- Machine where you run ansible / ansible-playbook (laptop or jump host).
+
+Managed nodes:
+- Remote servers, VMs, cloud instances Ansible configures.
+
+Inventory:
+- List of hosts (static file or dynamic from AWS/cloud).
+
+Playbooks:
+- YAML files: plays → tasks → modules.
+
+Modules:
+- Built-in units that do real work (yum, apt, copy, service, template, etc.).
+
+Roles:
+- Reusable folder layout for tasks, templates, vars, handlers (Part 2 — Day 22).
+
+
+4) How Ansible runs (workflow)
+------------------------------
+1. Connect to targets (SSH / WinRM).
+2. Push module code + parameters; module runs on target.
+3. Return JSON result: ok / changed / failed / skipped / unreachable.
+
+Basic project flow:
+  Step 1 — Write playbook (YAML)
+  Step 2 — ansible-playbook -i inventory playbook.yml
+  Step 3 — Read PLAY RECAP + fix failures
+
+
+5) Setup: virtual environment named pathnex
+-------------------------------------------
+mkdir ansible-env
+cd ansible-env
+
+python3 -m venv pathnex
+
+# Linux / macOS / WSL
+source pathnex/bin/activate
+
+# Windows PowerShell
+pathnex\Scripts\Activate.ps1
+
+# Windows CMD
+pathnex\Scripts\activate.bat
+
+Prompt should show: (pathnex) $
+
+pip install --upgrade pip
+pip install ansible
+
+ansible --version
+
+deactivate   # when done
+
+
+6) Simple inventory
+-------------------
+inventory.ini example:
+
+[webservers]
+server1.example.com
+server2.example.com
+
+[dbservers]
+db1.example.com
+
+[webservers:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+Test connectivity:
+ansible -i inventory.ini webservers -m ping
+
+
+7) Ad-hoc commands (before playbooks)
+-------------------------------------
+# ping all in group
+ansible -i inventory.ini webservers -m ping
+
+# install package (RedHat family)
+ansible -i inventory.ini webservers -m yum -a "name=nginx state=present" -b
+
+# Debian/Ubuntu
+ansible -i inventory.ini webservers -m apt -a "name=nginx state=present" -b
+
+# copy file
+ansible -i inventory.ini webservers -m copy -a "src=./index.html dest=/var/www/html/index.html" -b
+
+# service
+ansible -i inventory.ini webservers -m service -a "name=nginx state=started enabled=yes" -b
+
+Flags I use often:
+-b  become (sudo)
+-m  module name
+-a  module arguments
+-i  inventory file
+
+
+8) First playbook (tasks + modules)
+-----------------------------------
+webserver.yml:
+
+---
+- name: Set up a web server
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Install Nginx
+      yum:
+        name: nginx
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Nginx (Debian)
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Start Nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+Run:
+ansible-playbook -i inventory.ini webserver.yml
+
+
+9) Handlers (intro — notify on change)
+--------------------------------------
+Handlers run only when a task reports "changed" and notifies them.
+
+Example pattern:
+  tasks:
+    - name: Deploy nginx config
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify: Restart nginx
+
+  handlers:
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+(Deeper roles + templates — Day 22.)
+
+
+10) Common use cases (from class)
+---------------------------------
+- System config: users, packages, permissions
+- App deployment: code to staging/prod
+- Cloud provisioning: AWS/GCP/Azure modules
+- Patch management across fleet
+- IaC-style config versioned in Git (pairs with CI/CD on Day 22)
+
+
+11) Playbook output — what each status means
+--------------------------------------------
+PLAY RECAP line example:
+webserver1 : ok=3 changed=1 unreachable=0 failed=0 skipped=0 rescued=0 ignored=0
+
+| Status      | Meaning                                      |
+|-------------|----------------------------------------------|
+| ok          | Success, no change on host                   |
+| changed     | Success, host was modified                   |
+| failed      | Task error (see msg in output)               |
+| skipped     | when: condition not met                      |
+| unreachable | SSH/network failure                          |
+| rescued     | Recovered via block/rescue (Day 22)          |
+| ignored     | ignore_errors: yes                           |
+
+Colorized terminal (default):
+- Green = ok
+- Yellow = changed
+- Red = failed
+- Grey = skipped / info
+
+Dry run (no changes):
+ansible-playbook -i inventory.ini webserver.yml --check
+
+More debug detail:
+ansible-playbook -i inventory.ini webserver.yml -v
+ansible-playbook -i inventory.ini webserver.yml -vvv
+
+
+12) Example PLAY output (successful run)
+----------------------------------------
+PLAY [Web Servers]
+TASK [Ping web server]     ok: [webserver1]
+TASK [Install Nginx]       changed: [webserver1]
+TASK [Start Nginx service] ok: [webserver1]
+PLAY RECAP
+webserver1 : ok=3 changed=1 unreachable=0 failed=0 skipped=0
+
+
+13) Failed / skipped / unreachable (quick read)
+-----------------------------------------------
+failed:
+  - Package not found, permission denied, bad path — read "msg" in JSON output.
+
+skipped:
+  - Usually when: false on a task.
+
+unreachable:
+  - fatal: UNREACHABLE! — SSH timeout, wrong key, security group, host down.
+
+
+14) Commands checklist (Day 21)
+-------------------------------
+ansible --version
+ansible -i inventory.ini all -m ping
+ansible -i inventory.ini webservers -m setup   # facts preview
+ansible-playbook -i inventory.ini playbook.yml
+ansible-playbook -i inventory.ini playbook.yml --check
+ansible-playbook -i inventory.ini playbook.yml -v
+
+
+15) Job-ready takeaway (Part 1)
+-------------------------------
+- Agentless + SSH is the default interview answer.
+- Inventory groups hosts; playbooks target hosts:.
+- Idempotency starts with modules (state=present vs latest) — full section Day 22.
+- Always read PLAY RECAP; use --check before prod-like runs.
+
+
+Push from EC2 (same daily steps from Day 7)
+-------------------------------------------
+git checkout main && git pull origin main
+git checkout -b Day21-23-May-2026
+git add timings/Day21-23-May-2026.txt "coding practice/Day21-23-May-2026.txt"
+git commit -m "Added Day21 Ansible Part 1 notes (23 May 2026)"
+# git push -u origin Day21-23-May-2026   (I will do this manually when needed)
