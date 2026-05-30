@@ -1,0 +1,291 @@
+SSL/TLS + SRE Roadmap — Day 26 (28 May 2026)
+PathNex class notes + what I practiced today
+=============================================
+
+Two sessions today:
+  Part A — SSL/TLS certificates (secure apps in production)
+  Part B — SRE roadmap (skills, projects, interviews for 25+ LPA roles)
+
+
+═══════════════════════════════════════
+PART A — SSL/TLS IN DEVOPS
+═══════════════════════════════════════
+
+1) Why HTTP is insecure
+-----------------------
+HTTP = plain text over the network.
+
+Anyone on the path (Wi‑Fi, ISP, compromised router) can:
+- Read passwords, tokens, API keys
+- Modify responses (MITM attack)
+- Impersonate your server
+
+Production rule: always HTTPS for user-facing and API traffic.
+
+
+2) SSL vs TLS (interview clarity)
+---------------------------------
+SSL (Secure Sockets Layer) — old protocol (SSL 3.0 deprecated).
+TLS (Transport Layer Security) — modern successor (TLS 1.2, TLS 1.3).
+
+In daily speech people say "SSL cert" but mean TLS certificate.
+Use TLS 1.2+ in production; disable TLS 1.0/1.1.
+
+
+3) How certificates actually work (simplified)
+----------------------------------------------
+1. Server has key pair: private key (secret) + public key (shared)
+2. Certificate = public key + identity (domain name) signed by CA
+3. Browser/client trusts CA root store
+4. TLS handshake:
+   - Client hello (supported ciphers)
+   - Server sends certificate
+   - Client verifies cert (domain, expiry, CA chain)
+   - Session keys exchanged → encrypted channel
+
+Chain of trust:
+  Root CA → Intermediate CA → Server certificate (your domain)
+
+
+4) Key terms
+------------
+| Term            | Meaning                                      |
+|-----------------|----------------------------------------------|
+| CA              | Certificate Authority (Let's Encrypt, DigiCert)|
+| CSR             | Certificate Signing Request (you generate)   |
+| Private key     | Never share; on server only                  |
+| SAN             | Subject Alternative Names (multi-domain)     |
+| Wildcard cert   | *.example.com                                |
+| Self-signed     | You sign yourself — dev/lab only             |
+
+
+5) Step-by-step installation (real environments)
+------------------------------------------------
+
+Option A — Let's Encrypt (free, auto-renew) on Linux + Nginx:
+  sudo apt install certbot python3-certbot-nginx
+  sudo certbot --nginx -d app.example.com
+  # Auto-renew: certbot renew (cron/systemd timer)
+
+Option B — AWS ACM (Certificate Manager)
+  - Request cert in ACM (DNS validation recommended)
+  - Attach to ALB or CloudFront
+  - AWS handles renewal for ACM-managed certs
+
+Option C — Kubernetes Ingress TLS
+  - Create TLS secret from cert + key:
+    kubectl create secret tls app-tls \
+      --cert=fullchain.pem --key=privkey.pem -n prod
+  - Ingress spec:
+    tls:
+      - hosts: [app.example.com]
+        secretName: app-tls
+
+Option D — cert-manager (K8s automated)
+  - Installs cert-manager via Helm
+  - ClusterIssuer for Let's Encrypt
+  - Certificate CR auto-renews into Secret
+
+
+6) HTTPS setup for production apps
+----------------------------------
+Typical AWS pattern (PathNex Days 07–09):
+  User → CloudFront/ALB (HTTPS, ACM cert) → Target group (HTTP or HTTPS)
+
+Typical K8s pattern (Days 12–15):
+  User → Ingress controller (nginx/ALB) → TLS termination → Service → Pods
+
+Best practices:
+- Redirect HTTP → HTTPS (301)
+- HSTS header (Strict-Transport-Security) after HTTPS stable
+- Strong ciphers only; TLS 1.2+
+- Private key permissions: 600, not in Git
+
+
+7) Common SSL/TLS mistakes
+--------------------------
+- Expired certificate (monitor expiry — Datadog/Prometheus alert 30 days before)
+- Wrong domain on cert (CN/SAN mismatch)
+- Incomplete chain (missing intermediate cert)
+- Private key committed to GitHub
+- TLS terminated twice incorrectly (double encryption confusion)
+- Self-signed cert in production
+- Forgetting to renew Let's Encrypt (fix: cert-manager or cron)
+- Mixed content (HTTPS page loading HTTP assets)
+
+
+8) Real DevOps use cases
+------------------------
+- Public web app behind ALB + ACM
+- Internal mTLS between microservices (service mesh — advanced)
+- Kafka/MSK: SSL + SASL for broker connections
+- API gateway TLS termination
+- Jenkins/GitLab HTTPS for CI/CD UI
+
+
+9) SSL troubleshooting commands
+---------------------------------
+# Check cert expiry and subject
+openssl s_client -connect app.example.com:443 -servername app.example.com </dev/null 2>/dev/null | openssl x509 -noout -dates -subject
+
+# Verify cert against key
+openssl x509 -noout -modulus -in cert.pem | openssl md5
+openssl rsa  -noout -modulus -in key.pem  | openssl md5
+# (hashes must match)
+
+# Test TLS version
+curl -Iv https://app.example.com
+
+
+═══════════════════════════════════════
+PART B — SRE ROADMAP (25+ LPA SKILLS)
+═══════════════════════════════════════
+
+10) SRE vs DevOps (clear difference)
+------------------------------------
+DevOps (culture/practice):
+- Break silos between dev and ops
+- CI/CD, automation, IaC, faster delivery
+- "How do we ship faster and safer?"
+
+SRE (Google discipline):
+- Apply software engineering to operations
+- Reliability as a measurable goal (SLOs, error budgets)
+- "How do we keep the system reliable while shipping?"
+
+Overlap: both use Linux, cloud, K8s, monitoring, automation.
+Interview line: "DevOps is the philosophy; SRE is one implementation with
+quantified reliability."
+
+
+11) Core SRE skills (mapped to PathNex)
+---------------------------------------
+| Skill        | PathNex days        | SRE use                          |
+|--------------|---------------------|----------------------------------|
+| Linux        | 01–06               | Debug servers, logs, permissions |
+| Networking   | 04, AWS VPC (07–08) | DNS, TLS, load balancers, firewalls|
+| Cloud (AWS)  | 07–09               | EC2, IAM, RDS, scaling           |
+| Containers   | 10–11               | Docker, images, compose          |
+| Kubernetes   | 12–17               | Deployments, probes, Helm        |
+| GitOps       | 18                  | ArgoCD, drift, rollback          |
+| IaC          | 19–20               | Terraform, state, drift          |
+| Automation   | 21–22               | Ansible, CI/CD                   |
+| Observability| 23–24               | Metrics, logs, dashboards        |
+| Streaming    | 25                  | Kafka, event-driven reliability  |
+| Security     | 26 (today)          | TLS, secrets, least privilege    |
+
+
+12) Observability — logs, metrics, traces
+-----------------------------------------
+Three pillars (Day 23–24):
+- Metrics — Prometheus/Grafana/Datadog (is the system healthy?)
+- Logs — ELK/Kibana (why did it fail?)
+- Traces — APM/Jaeger (which service in the chain is slow?)
+
+SRE golden signals: Latency, Traffic, Errors, Saturation.
+
+
+13) Reliability basics — SLI, SLO, Error Budget
+-----------------------------------------------
+SLI (Service Level Indicator):
+- Measurable metric of service behavior
+- Example: % of HTTP requests completed in < 200ms
+
+SLO (Service Level Objective):
+- Target for SLI over time window
+- Example: 99.9% of requests < 200ms over 30 days
+
+SLA (Service Level Agreement):
+- Contract with customers (often stricter SLO internally)
+
+Error budget:
+- Allowed unreliability = 100% - SLO
+- 99.9% SLO → 0.1% error budget (~43 min downtime/month)
+- If budget burned → slow releases, focus on stability
+- If budget healthy → team can ship faster
+
+Example:
+  SLI: successful requests / total requests
+  SLO: 99.95% monthly
+  Error budget: 0.05% → triggers freeze on risky deploys if exceeded
+
+
+14) On-call + incident management
+---------------------------------
+Severity levels (common):
+| Level  | Meaning                    | Response              |
+|--------|----------------------------|-----------------------|
+| SEV-1  | Full outage, revenue impact| All hands, immediate  |
+| SEV-2  | Major degradation          | On-call + lead eng    |
+| SEV-3  | Minor issue, workaround    | Business hours fix    |
+| SEV-4  | Cosmetic / low priority    | Backlog               |
+
+Incident lifecycle:
+1. Detect (alert from Prometheus/Datadog)
+2. Triage (SEV level, incident commander)
+3. Mitigate (rollback, scale, failover — stop the bleeding)
+4. Resolve (root fix)
+5. Postmortem (blameless, action items, update runbooks)
+
+On-call skills: read dashboards, kubectl, logs in Kibana, communicate status,
+know rollback path (ArgoCD sync previous — Day 18).
+
+
+15) Best projects for resume (PathNex-style)
+--------------------------------------------
+1. End-to-end microservice on EKS
+   - Terraform VPC + EKS, Helm deploy, ArgoCD GitOps, Prometheus alerts, ELK logs
+
+2. CI/CD pipeline with staging + prod gates
+   - GitLab CI or Jenkinsfile, manual prod approval, automated tests
+
+3. SLO dashboard
+   - Grafana panel: availability + latency SLO + error budget burn rate
+
+4. Incident runbook repo
+   - Markdown runbooks: "high CPU", "pod crash loop", "cert expiry"
+
+5. Kafka event pipeline
+   - MSK or local Kafka, producer/consumer, lag monitoring in Datadog
+
+
+16) Top SRE interview questions
+-------------------------------
+- SRE vs DevOps?
+- Define SLI, SLO, error budget with example
+- How do you measure reliability?
+- What do you do when error budget is exhausted?
+- Describe a production incident you handled (STAR format)
+- How reduce MTTR?
+- What alerts would you set for a web API?
+- Kubernetes: liveness vs readiness?
+- How handle cascading failures?
+- CAP theorem basics (consistency vs availability tradeoff)
+
+
+17) SRE preparation plan (4-week sketch)
+----------------------------------------
+Week 1: Linux + networking review (Days 01–04) + practice debugging
+Week 2: K8s + Helm deep dive (Days 12–17) + break a pod on purpose, fix it
+Week 3: Observability (Days 23–24) + build one Grafana dashboard + Kibana query
+Week 4: SLO math + mock incidents + Terraform/Ansible mini project
+Daily: 5 interview answers written out loud
+
+
+18) Job-ready checklist (Day 26)
+--------------------------------
+[ ] Explain TLS handshake in 4 steps
+[ ] Know ACM vs Let's Encrypt vs cert-manager use cases
+[ ] Define SLI, SLO, error budget with numbers
+[ ] Know SEV-1 vs SEV-2 response
+[ ] Map PathNex 26 days to SRE skill areas
+[ ] Have 2 resume project bullets ready
+
+
+Push from EC2 (same daily steps from Day 7)
+-------------------------------------------
+git checkout main && git pull origin main
+git checkout -b Day26-28-May-2026
+git add timings/Day26-28-May-2026.txt "coding practice/Day26-28-May-2026.txt"
+git commit -m "Added Day26 SSL TLS and SRE roadmap notes (28 May 2026)"
+# git push -u origin Day26-28-May-2026   (I will do this manually when needed)
