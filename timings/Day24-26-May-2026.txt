@@ -1,0 +1,16 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 3 hours - ELK Stack class: Elasticsearch, Logstash, Kibana, centralised logging
+# 1 hour - log flow lab + Kibana search + dashboard basics
+# 30 mins - linked ELK to K8s (Fluent Bit) + Terraform/Ansible from PathNex stack
+# 30 mins - Day24 files + commit (no push)
+
+## Tomorrow's Task
+# Revision: draw full observability stack (metrics Day23 + logs Day24)
+# 45 mins - practice Kibana query (status:500, service:api, @timestamp range)
+# 45 mins - monitoring + logging interview Q&A combined
+# 30 mins - push branch when ready
+
+----------------------------------------
+----------------------------------------

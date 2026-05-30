@@ -1,0 +1,347 @@
+ELK Stack — Day 24 (26 May 2026)
+PathNex class notes + what I practiced today
+=============================================
+
+Session goal: master DevOps logging with Elasticsearch, Logstash, and Kibana —
+log collection, search, analysis, dashboards. Tied to Kubernetes + Terraform +
+Ansible (full PathNex stack).
+
+
+═══════════════════════════════════════
+PART A — INTRODUCTION TO ELK
+═══════════════════════════════════════
+
+1) Why logging matters (core DevOps skill)
+------------------------------------------
+Metrics tell you something is wrong (Day 23).
+Logs tell you why — stack traces, error messages, request IDs, audit trail.
+
+Companies expect:
+- Centralised logs (not SSH + tail on each server)
+- Search across all services
+- Dashboards for error trends
+- Fast troubleshooting during incidents
+
+
+2) ELK / Elastic Stack components
+---------------------------------
+| Component     | Role                                              |
+|---------------|---------------------------------------------------|
+| Elasticsearch | Store, index, search log data (distributed DB)  |
+| Logstash      | Collect, parse, transform, ship logs to ES        |
+| Kibana        | Visualise, search, build dashboards on ES data    |
+
+Modern variant — BEEF / EFK:
+- Beats (Filebeat, Metricbeat) — lightweight shippers on hosts
+- Sometimes Fluent Bit / Fluentd in K8s instead of Logstash
+
+Flow:
+  App/server logs → Beats/Logstash/Fluent Bit → Elasticsearch → Kibana
+
+
+3) Elasticsearch basics
+-----------------------
+- Document-oriented JSON store
+- Index = like a database table (logs-2026.05.26)
+- Shard + replica for scale and HA
+- Full-text search + aggregations
+
+Key terms:
+- Index pattern: logs-* or pathnex-app-*
+- Document: one log line as JSON
+- Field: level, message, service, host, @timestamp
+
+
+4) Logstash basics
+------------------
+Pipeline: input → filter → output
+
+Example logstash.conf sketch:
+input {
+  beats {
+    port => 5044
+  }
+}
+filter {
+  grok {
+    match => { "message" => "%{COMBINEDAPACHELOG}" }
+  }
+  date {
+    match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+  }
+}
+output {
+  elasticsearch {
+    hosts => ["http://elasticsearch:9200"]
+    index => "apache-%{+YYYY.MM.dd}"
+  }
+}
+
+Filters: grok (parse), mutate, json, geoip, drop
+
+
+5) Kibana basics
+----------------
+- Discover — search and explore raw logs
+- Visualize — charts from ES aggregations
+- Dashboard — combine visualizations
+- Index pattern — connect Kibana to ES indices
+
+
+═══════════════════════════════════════
+PART B — LOG COLLECTION & CENTRALISED LOGGING
+═══════════════════════════════════════
+
+6) Log collection patterns
+--------------------------
+On VM / EC2:
+- Filebeat tails /var/log/*.log → Logstash or direct to Elasticsearch
+
+On Docker:
+- JSON log driver or Fluent Bit sidecar → ES
+
+On Kubernetes (PathNex Day 12–18 connection):
+- DaemonSet (Fluent Bit / Filebeat) on every node
+- Collects container stdout/stderr from /var/log/containers/
+- Adds K8s metadata: namespace, pod, container, labels
+
+
+7) Centralised logging architecture
+-----------------------------------
+                    ┌─────────────┐
+  App pods/VMs ───► │  Collector  │ (Filebeat / Fluent Bit / Logstash)
+                    └──────┬──────┘
+                           │
+                    ┌──────▼──────┐
+                    │ Elasticsearch│ (cluster, 3+ nodes in prod)
+                    └──────┬──────┘
+                           │
+                    ┌──────▼──────┐
+                    │   Kibana    │ (search + dashboards)
+                    └─────────────┘
+
+
+8) Structured logging (best practice)
+-----------------------------------
+Prefer JSON logs from apps:
+{"timestamp":"2026-05-26T10:00:00Z","level":"ERROR","service":"api","msg":"DB timeout","trace_id":"abc123"}
+
+Why: easy to filter in Kibana — level:ERROR AND service:api
+
+
+═══════════════════════════════════════
+PART C — SEARCHING & ANALYSING LOGS
+═══════════════════════════════════════
+
+9) Kibana Discover / KQL examples
+---------------------------------
+All errors in last 15 minutes:
+  level: "ERROR" and @timestamp >= now-15m
+
+HTTP 500s:
+  status: 500
+
+Specific service:
+  service: "payment-api"
+
+Combined:
+  service: "web" and status >= 500 and @timestamp >= now-1h
+
+Free text:
+  "connection refused"
+
+Trace one request:
+  trace_id: "abc123"
+
+
+10) Common troubleshooting scenarios
+------------------------------------
+| Symptom              | Log query / approach                    |
+|----------------------|-----------------------------------------|
+| Deploy broke prod    | Filter by deploy time + level:ERROR     |
+| Slow API             | Find high latency field or timeout msgs |
+| Pod crash            | K8s container name + OOM / exit code    |
+| Auth failures        | status:401 OR message: "unauthorized"   |
+| Disk full on node    | node logs + "no space left"             |
+
+
+11) Aggregations (analysis)
+---------------------------
+- Count errors per service (bar chart)
+- Error rate over time (line chart)
+- Top 10 error messages (data table)
+- Geo map from client IP (if geoip filter used)
+
+
+═══════════════════════════════════════
+PART D — BUILDING DASHBOARDS IN KIBANA
+═══════════════════════════════════════
+
+12) Dashboard build steps
+-------------------------
+1. Create index pattern (e.g. pathnex-logs-*)
+2. Set @timestamp as time field
+3. Visualize → Lens or classic viz
+4. Save visualizations
+5. Dashboard → Add saved visualizations
+6. Set default time range + refresh interval
+
+
+13) Production dashboard panels (starter set)
+---------------------------------------------
+- Error count over time (line)
+- Logs by level (pie: INFO/WARN/ERROR)
+- Top services by error volume (bar)
+- Recent ERROR logs (data table)
+- 4xx vs 5xx HTTP codes (if parsed from access logs)
+
+
+═══════════════════════════════════════
+PART E — REAL-WORLD DEVOPS USE CASES
+═══════════════════════════════════════
+
+14) Use case: incident response
+-------------------------------
+1. Datadog/Prometheus alert: high 5xx rate (Day 23)
+2. Open Kibana → filter same time window + status >= 500
+3. Find common error message or stack trace
+4. Correlate with deployment (ArgoCD sync time — Day 18)
+5. Rollback or hotfix → confirm error rate drops in dashboard
+
+
+15) Use case: security audit
+----------------------------
+- Who accessed admin API? → user_id + path:/admin
+- Failed logins spike → message:"failed login"
+- Retention policy on indices (30/90 days)
+
+
+16) Use case: compliance
+------------------------
+- Central audit trail in ES
+- Immutable indices or snapshots to S3
+- RBAC in Kibana (who can see prod logs)
+
+
+═══════════════════════════════════════
+PART F — ELK + KUBERNETES + TERRAFORM + ANSIBLE
+═══════════════════════════════════════
+
+17) Kubernetes + ELK (typical PathNex stack)
+--------------------------------------------
+Option A — ECK (Elastic Cloud on Kubernetes) operator
+Option B — Helm: elastic/elasticsearch, elastic/kibana, fluent-bit
+
+Fluent Bit DaemonSet (concept):
+- Runs on each node
+- Reads container logs
+- Adds kubernetes.* fields
+- Sends to Elasticsearch or Logstash
+
+Connect to prior K8s days:
+- Pod logs = kubectl logs (debug one pod)
+- Central logs = Kibana (debug whole cluster)
+- Probes (Day 16) = health; logs = why probe fails
+
+
+18) Terraform + ELK
+-------------------
+Terraform provisions:
+- EC2 or EKS cluster for ES nodes
+- EBS volumes for ES data
+- Security groups (9200 ES internal only)
+- S3 for snapshot repository
+
+Example resources (conceptual):
+- aws_instance or eks_cluster
+- aws_ebs_volume for ES data nodes
+- aws_security_group allow 9200 from app subnet only
+
+Day 19–20 tie-in: same IaC workflow — init, plan, apply for logging infra.
+
+
+19) Ansible + ELK
+-----------------
+Ansible configures:
+- Install Filebeat on app servers (Day 21–22 roles)
+- Ship logs to Logstash/ES
+- Template filebeat.yml from Jinja2 variables per env
+
+Example filebeat.yml.j2 vars:
+  env: prod
+  logstash_host: logstash.internal:5044
+  fields.service: "{{ app_name }}"
+
+Playbook role: roles/filebeat → handlers restart filebeat
+
+
+20) Full PathNex observability picture
+--------------------------------------
+| Layer        | Tool (PathNex days)     | Purpose              |
+|--------------|-------------------------|----------------------|
+| Infra        | Terraform (19–20)       | Provision ES/EKS/EC2 |
+| Config       | Ansible (21–22)         | Filebeat, agents     |
+| Orchestration| Kubernetes (12–17)      | App + Fluent Bit DS  |
+| Deploy       | ArgoCD (18)             | GitOps releases      |
+| Metrics      | Prometheus/Grafana (23) | Alerts, SLOs         |
+| SaaS metrics | Datadog (23)            | Enterprise monitoring|
+| Logs         | ELK (24)                | Search, dashboards   |
+| CI/CD        | Jenkins/GitLab (22)     | Build before deploy  |
+
+
+═══════════════════════════════════════
+PART G — INTERVIEW & JOB-READY
+═══════════════════════════════════════
+
+21) Interview questions (ELK-focused)
+-------------------------------------
+- What is the difference between Elasticsearch, Logstash, and Kibana?
+- How do logs get from a Kubernetes pod to Kibana?
+- What is an index pattern?
+- grok filter — what does it do?
+- How do you handle high log volume? (ILM, rollover, hot-warm-cold)
+- ELK vs Datadog Logs — tradeoffs?
+- How would you find all 500 errors after a deployment?
+
+22) ILM (Index Lifecycle Management) — prod term
+--------------------------------------------------
+Hot  → recent logs, fast SSD, frequent queries
+Warm → older, less queries
+Cold → archive
+Delete → after retention period
+
+Stops disk from filling up — common interview follow-up.
+
+
+23) Job-ready checklist (Day 24)
+--------------------------------
+[ ] Can draw ELK data flow on whiteboard
+[ ] Know Beats vs Logstash vs Fluent Bit roles
+[ ] Can write 3 Kibana queries for incident debug
+[ ] Can list 4 dashboard panels for error monitoring
+[ ] Can explain K8s + Terraform + Ansible touchpoints for logging
+[ ] Know structured JSON logging beats plain text for search
+
+
+24) Quick command reference
+---------------------------
+# K8s — one pod logs
+kubectl logs -f <pod> -n <namespace>
+
+# ES cluster health (if accessible)
+curl -X GET "localhost:9200/_cluster/health?pretty"
+
+# Filebeat test config
+filebeat test config
+
+# Logstash test config
+logstash -f pipeline.conf --config.test_and_exit
+
+
+Push from EC2 (same daily steps from Day 7)
+-------------------------------------------
+git checkout main && git pull origin main
+git checkout -b Day24-26-May-2026
+git add timings/Day24-26-May-2026.txt "coding practice/Day24-26-May-2026.txt"
+git commit -m "Added Day24 ELK Stack notes (26 May 2026)"
+# git push -u origin Day24-26-May-2026   (I will do this manually when needed)
