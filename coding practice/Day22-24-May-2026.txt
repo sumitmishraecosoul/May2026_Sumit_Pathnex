@@ -1,0 +1,329 @@
+Ansible Part 2 + CI/CD — Day 22 (24 May 2026)
+PathNex class notes + what I practiced today
+==============================================
+
+Today = Ansible Part 2 (finish job-ready topics) + CI/CD end-to-end session
+(Jenkins vs GitLab, pipeline demo, interview checklist).
+
+
+═══════════════════════════════════════
+PART A — ANSIBLE (Day 21 continuation)
+═══════════════════════════════════════
+
+
+1) Variables (where they live)
+------------------------------
+Types I should know:
+- Play vars / vars: in playbook
+- inventory vars ([group:vars] or host vars)
+- group_vars/ and host_vars/ folders next to inventory
+- role defaults (roles/<role>/defaults/main.yml)
+- extra vars: -e "key=value" (highest precedence in practice)
+
+Example in playbook:
+---
+- hosts: webservers
+  vars:
+    http_port: 8080
+    app_user: deploy
+  tasks:
+    - debug:
+        msg: "Serving on port {{ http_port }}"
+
+
+2) Facts (automatic discovery)
+------------------------------
+Gathered from target (ansible_facts). Disable if needed: gather_facts: no
+
+Common facts:
+- ansible_hostname
+- ansible_os_family   (RedHat, Debian, …)
+- ansible_distribution
+- ansible_default_ipv4.address
+
+Ad-hoc:
+ansible -i inventory.ini webservers -m setup
+
+Use in tasks:
+when: ansible_os_family == "Debian"
+
+
+3) Templates (Jinja2)
+---------------------
+template module renders .j2 files with variables on the remote host.
+
+roles/nginx/templates/nginx.conf.j2:
+  server {
+    listen {{ http_port }};
+    server_name {{ server_name }};
+  }
+
+Task:
+- name: Deploy nginx config
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/conf.d/app.conf
+    mode: '0644'
+  notify: Restart nginx
+
+
+4) Roles (how real projects structure Ansible)
+------------------------------------------------
+Standard layout:
+roles/
+  nginx/
+    defaults/main.yml    # low precedence defaults
+    vars/main.yml        # role-internal vars
+    tasks/main.yml
+    handlers/main.yml
+    templates/
+    files/
+    meta/main.yml
+
+Playbook calls role:
+---
+- hosts: webservers
+  become: yes
+  roles:
+    - nginx
+    - common
+
+Why roles:
+- Reuse across envs (dev/stage/prod)
+- Clear ownership per component (nginx, mysql, app)
+
+
+5) Handlers (recap + best practice)
+-----------------------------------
+- Run at end of play, only if notified, and only once even if many tasks notify.
+- Use for service restarts after config changes — not for every task.
+
+
+6) Error handling (must-know for jobs)
+--------------------------------------
+block / rescue / always:
+- block: try these tasks
+- rescue: run if block fails
+- always: always run (cleanup)
+
+Example:
+- block:
+    - name: risky deploy
+      command: /opt/app/deploy.sh
+  rescue:
+    - name: rollback
+      command: /opt/app/rollback.sh
+  always:
+    - name: log result
+      debug:
+        msg: "Deploy attempt finished"
+
+ignore_errors: yes   — continue play (use sparingly; shows as ignored= in recap)
+failed_when:         — treat custom condition as failure
+changed_when:       — control when task counts as changed
+
+
+7) Idempotency (interview favorite)
+-----------------------------------
+Definition:
+- Running the same playbook twice should leave system in desired state;
+  second run should mostly show ok, not changed.
+
+How Ansible helps:
+- Modules are idempotent by design when used correctly.
+  yum/apt: state=present  → install if missing, ok if already there
+  service: state=started  → start if stopped, ok if already running
+  copy/template with same content → ok on re-run
+
+Bad patterns (not idempotent):
+- command/shell without creates/removes/changed_when
+- always using state=latest in prod without intent
+
+Safe check before apply:
+ansible-playbook site.yml --check
+
+
+8) Ansible quick job checklist (Part 2)
+---------------------------------------
+[ ] Inventory + group_vars for env separation
+[ ] Roles for each stack layer (web, db, app)
+[ ] Handlers for service restarts
+[ ] template for config files (Jinja2)
+[ ] block/rescue for deploy rollback story
+[ ] --check on staging before prod
+[ ] -vvv only when debugging (noisy in prod logs)
+
+
+═══════════════════════════════════════
+PART B — CI/CD (3-hour session)
+═══════════════════════════════════════
+
+
+9) CI/CD fundamentals (simple, practical)
+-----------------------------------------
+CI (Continuous Integration):
+- Developers merge code often; each merge triggers build + automated tests.
+- Goal: catch bugs early, keep main branch always deployable.
+
+CD (Continuous Delivery / Deployment):
+- Delivery: artifact always ready to release; human approves prod.
+- Deployment: auto-release to prod after tests pass (stricter orgs pause here).
+
+Pipeline stages (universal):
+  Code → Build → Test → (Security scan) → Deploy → Monitor
+
+Artifacts:
+- Build output stored (jar, docker image, zip) — next stages consume same artifact.
+
+
+10) End-to-end pipeline (real project mental model)
+---------------------------------------------------
+1. Developer pushes to Git (feature branch → PR → main)
+2. CI server detects change (webhook / poll)
+3. Build: compile, docker build, npm run build, etc.
+4. Test: unit, integration, lint, SAST optional
+5. Publish artifact to registry (ECR, Nexus, GitLab registry)
+6. Deploy to dev/stage (Ansible, kubectl, CodeDeploy, Helm)
+7. Smoke test / approval gate
+8. Deploy to prod (blue/green, rolling, canary)
+9. Monitor: logs, metrics, rollback if alarms fire
+
+
+11) Jenkins — how it works + best practices
+-------------------------------------------
+Core pieces:
+- Controller (orchestrates)
+- Agents/nodes (run jobs)
+- Jobs / Pipelines (Jenkinsfile in repo = Pipeline as Code)
+
+Jenkinsfile (declarative sketch):
+pipeline {
+  agent any
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Build')    { steps { sh 'mvn package -DskipTests' } }
+    stage('Test')     { steps { sh 'mvn test' } }
+    stage('Deploy')   {
+      when { branch 'main' }
+      steps { sh './deploy.sh staging' }
+    }
+  }
+  post {
+    failure { echo 'Notify team' }
+  }
+}
+
+Best practices:
+- Jenkinsfile in Git (not click-ops only)
+- Use credentials store / vault — never plain secrets in Jenkinsfile
+- Separate agents for heavy builds
+- Parallel stages where safe
+- Archive artifacts; tag docker images with git SHA
+- Pin plugin versions; backup controller config
+
+
+12) GitLab CI/CD — how it works + best practices
+------------------------------------------------
+Core pieces:
+- .gitlab-ci.yml at repo root
+- GitLab Runners execute jobs
+- Built-in registry, environments, merge requests
+
+.gitlab-ci.yml sketch:
+stages: [build, test, deploy]
+
+variables:
+  IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+build:
+  stage: build
+  script:
+    - docker build -t $IMAGE .
+    - docker push $IMAGE
+
+test:
+  stage: test
+  script:
+    - npm ci && npm test
+
+deploy_staging:
+  stage: deploy
+  script:
+    - kubectl set image deploy/app app=$IMAGE
+  environment: staging
+  only:
+    - main
+
+Best practices:
+- Use stages + needs: for faster DAG pipelines
+- Cache dependencies (npm, maven)
+- Protected branches + manual prod deploy job
+- Use CI variables / masked variables for secrets
+- Review pipeline on MR before merge
+
+
+13) Jenkins vs GitLab — when to use what
+------------------------------------------
+| Scenario                         | Often choose        | Why                          |
+|----------------------------------|---------------------|------------------------------|
+| Already on GitLab repos          | GitLab CI           | Native MR pipelines, registry|
+| Heavy custom plugins / legacy    | Jenkins             | Huge plugin ecosystem        |
+| Multi-repo, many tools mixed     | Jenkins             | Flexible agents/integrations |
+| Greenfield GitLab shop           | GitLab CI           | Simpler ops, YAML in repo    |
+| Kubernetes-native GitOps         | Either + ArgoCD     | CI builds; GitOps deploys    |
+| Strict enterprise plugin needs   | Jenkins             | Custom groovy/shared libs    |
+
+Interview line:
+"CI tool builds and tests; CD may be same tool or GitOps (ArgoCD). Pick based on
+where code lives and team skills — not hype."
+
+
+14) Common CI/CD mistakes (avoid these)
+---------------------------------------
+- Secrets in repo or echo in logs
+- No tests in pipeline (build-only CI)
+- Deploying different code than was tested (no immutable artifact)
+- Skipping staging / no rollback plan
+- Long serial pipelines with no cache
+- Running as root on agents without isolation
+- No branch protection on main
+- Manual hotfix on server that drifts from pipeline
+
+
+15) CI/CD + Ansible together (PathNex arc)
+------------------------------------------
+Typical flow:
+  Git push → CI builds Docker image → push to registry
+         → CD stage runs ansible-playbook or triggers AWX
+         → config + deploy on target hosts / or kubectl for K8s
+
+Day 09 AWS Code* is cloud-native equivalent:
+  CodePipeline → CodeBuild → CodeDeploy
+
+
+16) Interview questions + job-ready checklist
+---------------------------------------------
+Questions to rehearse:
+- Difference between CI and CD?
+- What is a pipeline stage vs job vs step?
+- Blue/green vs rolling vs canary deploy?
+- Where do you store secrets in Jenkins vs GitLab?
+- What makes a pipeline "good" (fast feedback, reproducible, idempotent deploy)?
+- How do you rollback a bad deploy?
+
+Checklist:
+[ ] Can draw Code → Build → Test → Deploy on whiteboard
+[ ] Can explain one Jenkinsfile and one .gitlab-ci.yml
+[ ] Know artifact immutability (same SHA to stage and prod)
+[ ] Know branch strategy (main protected, PR checks required)
+[ ] Can name 3 pipeline failures you have seen and fixes
+[ ] Can connect to Ansible/Terraform/K8s from prior PathNex days
+
+
+Push from EC2 (same daily steps from Day 7)
+-------------------------------------------
+git checkout main && git pull origin main
+git checkout -b Day22-24-May-2026
+git add timings/Day22-24-May-2026.txt "coding practice/Day22-24-May-2026.txt"
+git commit -m "Added Day22 Ansible Part 2 + CI/CD notes (24 May 2026)"
+# git push -u origin Day22-24-May-2026   (I will do this manually when needed)

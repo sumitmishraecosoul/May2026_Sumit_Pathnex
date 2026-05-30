@@ -1,0 +1,15 @@
+----------------------------------------
+----------------------------------------
+# What I did today
+# 1.5 hours - Ansible Part 2: variables, facts, Jinja2 templates, roles, idempotency
+# 3 hours - CI/CD session: pipeline demo, Jenkins vs GitLab, interview checklist
+# 30 mins - Day22 files + commit (no push)
+
+## Tomorrow's Task
+# Revision: small Ansible role (nginx) + one Jenkinsfile OR .gitlab-ci.yml sketch
+# 45 mins - practice block/rescue + --check on a playbook
+# 45 mins - CI/CD interview Q&A (pipeline stages, artifacts, secrets)
+# 30 mins - push branch when ready
+
+----------------------------------------
+----------------------------------------
